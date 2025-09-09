@@ -1,4 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router";
+import { AuthLayout } from "./auth/layout/AuthLayout";
+import { LoginPage } from "./auth/pages/LoginPage";
+import LandingPage from "./clinica/pages/LandingPage";
+import { ClinicaLayout } from "./clinica/layout/ClinicaLayout";
 
 
 
@@ -6,11 +10,11 @@ import { createBrowserRouter, Navigate } from "react-router";
 export const appRouter = createBrowserRouter([
   {
     path: '/',
-    element: <h1>Home Layout</h1>,
+    element: <ClinicaLayout />,
     children: [
       {
         index: true,
-        element: <h2>HomePage</h2>
+        element: <LandingPage />
       },
       {
         path: 'especialidad/:exam'
@@ -20,7 +24,7 @@ export const appRouter = createBrowserRouter([
   // auth routes 
   {
     path: '/auth',
-    element: <h2>AuthLayout</h2>,
+    element: <AuthLayout />,
     children: [
       {
         index: true,
@@ -28,7 +32,7 @@ export const appRouter = createBrowserRouter([
       },
       {
         path: 'login',
-        element: <h2>Login page</h2>
+        element: <LoginPage />
       },
       {
         path: 'register',

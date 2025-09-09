@@ -114,7 +114,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
+
+/* @layer components {
+  .btn-medical {
+    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground hover:from-primary hover:to-accent transition-all duration-300 shadow-md rounded-lg px-4 py-2;
+  }
+
+  .card-medical {
+    @apply bg-card text-card-foreground border border-border shadow-lg rounded-xl p-6;
+  }
+} */

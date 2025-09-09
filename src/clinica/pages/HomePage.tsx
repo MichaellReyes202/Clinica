@@ -1,10 +1,11 @@
+import { Outlet } from "react-router"
 
 
 
 export const HomePage = () => {
   return (
     <div>
-      Home page
+      <Outlet />
     </div>
   )
 }
