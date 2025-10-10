@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Menu,
   X,
+  ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Link, useLocation } from "react-router"
@@ -140,26 +141,27 @@ export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
   return (
     <>
       {/* Mobile toggle button */}
-      <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 md:hidden bg-sidebar text-sidebar-foreground"
-        onClick={() => toggleCollapse()}
-      >
+      <Button variant="ghost" size="icon" className="fixed top-5 left-4 z-50 md:hidden bg-sidebar text-sidebar-foreground " onClick={() => toggleCollapse()}>
         {isCollapsed ? <Menu className="h-5 w-5" /> : <X className="h-5 w-5" />}
       </Button>
 
       {/* Sidebar */}
-      <aside
-        className={cn("fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300",
-          isCollapsed ? "-translate-x-full md:translate-x-0 md:w-16 " : "w-64",
-        )}
-
-      >
+      <aside className={
+        cn("fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300", isCollapsed ? "-translate-x-full md:translate-x-0 md:w-16 " : "w-64")
+      }>
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="px-4 py-7 border-b border-sidebar-border justify-items-center">
-            <h2 className={cn("font-bold text-sidebar-foreground transition-opacity", isCollapsed ? "md:opacity-0 md:hidden" : "opacity-100")}>
+
+          <div className=" py-7 border-b border-sidebar-border justify-items-center flex flex-row justify-around align-text-top  md:py-4">
+            <h2 className={cn("font-bold text-sidebar-foreground transition-opacity self-center", isCollapsed ? "md:opacity-0 md:hidden" : "opacity-100")}>
               Oficentro Masaya
             </h2>
+            <div className="p-2  border-sidebar-border hidden  md:block">
+              <Button variant="ghost" size="sm" onClick={() => toggleCollapse()} className="text-sidebar-foreground hover:bg-sidebar-accent">
+                {isCollapsed ? <ChevronRight className="h-7 w-7 font-bold" /> : <ChevronLeft className="h-7 w-7 font-bold" />}
+              </Button>
+            </div>
           </div>
+
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-2">
@@ -220,11 +222,11 @@ export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
           </nav>
 
           {/* Collapse toggle (desktop only) */}
-          <div className="p-2 border-t border-sidebar-border hidden md:block">
+          {/* <div className="p-2 border-t border-sidebar-border hidden md:block">
             <Button variant="ghost" size="sm" onClick={() => toggleCollapse()} className="w-full text-sidebar-foreground hover:bg-sidebar-accent">
               {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
-          </div>
+          </div> */}
         </div>
       </aside>
     </>

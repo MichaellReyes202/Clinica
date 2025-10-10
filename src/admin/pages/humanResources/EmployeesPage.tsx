@@ -4,170 +4,144 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Users, Plus, Search, Edit } from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Users, Search, Edit, Plus } from "lucide-react"
 
-interface Employee {
-  id: string
-  name: string
-  role: string
-  specialty?: string
-  phone: string
-  email: string
-  status: "active" | "inactive"
-}
+import { useEmployes } from "@/clinica/hooks/useEmployes"
+import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
+import { EmployeesForm } from "@/admin/components/EmployeesForm"
+import type { Employee, EmployeeListDto } from "@/interfaces/Employes.response"
+import { usePosition } from "@/clinica/hooks/usePosition"
+import { useSpecialties } from "@/clinica/hooks/useSpecialties"
+import { useEmployeeDetail } from "./useEmployeeDetail"
+import { useQueryClient } from "@tanstack/react-query"
+
+
+
+
+
 
 export const EmployeesPage = () => {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("")
-  const [employees] = useState<Employee[]>([
-    {
-      id: "1",
-      name: "Dr. Juan Pérez",
-      role: "Médico",
-      specialty: "Medicina General",
-      phone: "8888-8888",
-      email: "juan@clinic.com",
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Dra. María García",
-      role: "Médico",
-      specialty: "Pediatría",
-      phone: "8888-8889",
-      email: "maria@clinic.com",
-      status: "active",
-    },
-    {
-      id: "3",
-      name: "Ana López",
-      role: "Recepcionista",
-      phone: "8888-8890",
-      email: "ana@clinic.com",
-      status: "active",
-    },
-    {
-      id: "4",
-      name: "Carlos Ruiz",
-      role: "Enfermero",
-      phone: "8888-8891",
-      email: "carlos@clinic.com",
-      status: "active",
-    },
-  ])
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [employeeIdToEdit, setEmployeeIdToEdit] = useState<number | null>(null);
 
-  const filteredEmployees = employees.filter(
-    (emp) =>
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.role.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+
+  const { data: positionsData, isLoading: isLoadingPositions } = usePosition();
+  const { data: specialtiesData, isLoading: isLoadingSpecialties } = useSpecialties();
+  const { data: employeesData, isLoading: isLoadingEmployees } = useEmployes();
+
+  const { employee, isLoading: isLoadingDetail } = useEmployeeDetail(employeeIdToEdit);
+
+
+
+  // --- Lógica del Modal ---
+  const handleOpenCreate = () => {
+    setEmployeeIdToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (employeeId: number) => {
+    setEmployeeIdToEdit(employeeId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEmployeeIdToEdit(null);
+    queryClient.resetQueries({ queryKey: ["employeeDetail"] });
+  };
+
+  if (isLoadingEmployees || isLoadingPositions || isLoadingSpecialties) {
+    return <CustomFullScreenLoading />;
+  }
+
+  const filteredEmployees = (employeesData?.employeeListDto || []).filter((emp) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      emp.fullName.toLowerCase().includes(term) ||
+      emp.dni.toLowerCase().includes(term) ||
+      (emp.especialtyName && emp.especialtyName.toLowerCase().includes(term))
+    );
+  });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-lg bg-sidebar-primary/20 flex items-center justify-center">
-          <Users className="h-5 w-5 text-chart-1" />
-        </div>
-        <div>
-          <h2 className="text-3xl font-bold text-foreground">Gestión de Empleados</h2>
-          <p className="text-muted-foreground">Administre el personal de la clínica</p>
-        </div>
-      </div>
+      {/* ... encabezado omitido ... */}
 
       <Card>
         <CardHeader>
           <CardTitle>Personal de la Clínica</CardTitle>
           <CardDescription>Lista de empleados registrados</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar empleado..."
+                placeholder="Buscar empleado por nombre o DNI..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
               />
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Empleado
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Agregar Nuevo Empleado</DialogTitle>
-                  <DialogDescription>Ingrese los datos del empleado</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Nombre Completo</Label>
-                    <Input placeholder="Ej: Dr. Juan Pérez" />
-                  </div>
-                  <div>
-                    <Label>Cargo</Label>
-                    <Input placeholder="Ej: Médico, Enfermero, Recepcionista" />
-                  </div>
-                  <div>
-                    <Label>Especialidad (opcional)</Label>
-                    <Input placeholder="Ej: Medicina General" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Teléfono</Label>
-                      <Input placeholder="8888-8888" />
-                    </div>
-                    <div>
-                      <Label>Email</Label>
-                      <Input type="email" placeholder="email@clinic.com" />
-                    </div>
-                  </div>
-                  <Button className="w-full">Guardar Empleado</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={handleOpenCreate}>
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Empleado
+            </Button>
           </div>
 
+          {/* Mostramos el modal cuando está abierto */}
+          {isModalOpen && (
+            <EmployeesForm
+              initialEmployee={employeeIdToEdit ? employee : null}
+              positions={positionsData ?? []}
+              specialties={specialtiesData ?? []}
+              onClose={handleCloseModal}
+              isOpen={isModalOpen && !isLoadingDetail} // Espera a que cargue
+            />
+          )}
+
+          {/* Tabla */}
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Nombre</TableHead>
-                <TableHead>Cargo</TableHead>
+                <TableHead>DNI</TableHead>
                 <TableHead>Especialidad</TableHead>
+                <TableHead>Cargo</TableHead>
                 <TableHead>Teléfono</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {filteredEmployees.map((employee) => (
                 <TableRow key={employee.id}>
-                  <TableCell className="font-medium">{employee.name}</TableCell>
-                  <TableCell>{employee.role}</TableCell>
-                  <TableCell>{employee.specialty || "-"}</TableCell>
-                  <TableCell>{employee.phone}</TableCell>
+                  <TableCell>{employee.id}</TableCell>
+                  <TableCell className="font-medium">{employee.fullName}</TableCell>
+                  <TableCell>{employee.dni}</TableCell>
+                  <TableCell>{employee.especialtyName || "-"}</TableCell>
+                  <TableCell>{employee.positionName}</TableCell>
+                  <TableCell>{employee.contactPhone}</TableCell>
                   <TableCell>{employee.email}</TableCell>
                   <TableCell>
-                    <Badge variant={employee.status === "active" ? "secondary" : "destructive"}>
-                      {employee.status === "active" ? "Activo" : "Inactivo"}
+                    <Badge variant={employee.isActive ? "secondary" : "destructive"}>
+                      {employee.isActive ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleOpenEdit(employee.id)}
+                    >
                       <Edit className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -178,5 +152,5 @@ export const EmployeesPage = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
