@@ -1,7 +1,7 @@
 
 
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@/components/ui/label"
@@ -15,6 +15,9 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 
 
 import img_back from '../../assets/108329.jpg'
+import { useNavigate } from "react-router";
+import { useAuthStore } from "../store/auth.store";
+import { toast } from "sonner";
 
 // Esquema de validación con Zod
 const loginSchema = z.object({
@@ -30,18 +33,19 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-interface LoginFormProps {
-  onSubmit?: (data: LoginFormValues) => Promise<void> | void;
-  isLoading?: boolean;
-  className?: string;
-}
+// interface LoginFormProps {
+//   onSubmit?: (data: LoginFormValues) => Promise<void> | void;
+//   isLoading?: boolean;
+//   className?: string;
+// }
 
-export const LoginPage: React.FC<LoginFormProps> = ({ onSubmit, isLoading = false }) => {
-  const [showPassword, setShowPassword] = useState(false);
+export const LoginPage = () => {
+
+  const navigate = useNavigate();
+  const { login } = useAuthStore();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Configuración del formulario con React Hook Form y Zod
-  const form = useForm<LoginFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -50,34 +54,25 @@ export const LoginPage: React.FC<LoginFormProps> = ({ onSubmit, isLoading = fals
   });
 
   // Handler para el envío del formulario
-  const handleSubmit = async (data: LoginFormValues) => {
-    if (isLoading || isSubmitting) return;
-
+  const handleLogin = async (data: LoginFormValues) => {
     setIsSubmitting(true);
-    try {
-      if (onSubmit) {
-        await onSubmit(data);
-      } else {
-        // Simulación de llamada a API por defecto
-        console.log("Login data:", data);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    } catch (error) {
-      console.error("Error durante el login:", error);
-      // Aquí podrías manejar errores específicos y mostrarlos al usuario
-    } finally {
-      setIsSubmitting(false);
+    const isValid = await login(data.email, data.password);
+    if (isValid) {
+      navigate("/dashboard")
+      return;
     }
+    toast.error("Incorrect email or password");
+    setIsSubmitting(false);
   };
 
-  const isFormLoading = isLoading || isSubmitting;
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in-up">
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
 
-          <form className="p-6 md:p-8" >
+          {/* 1. VINCULAR el submit del formulario con el handler de RHF */}
+          <form className="p-6 md:p-8" onSubmit={handleSubmit(handleLogin)}>
             <div className="text-center space-y-6 my-4">
               <div className="mx-auto w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
                 <Stethoscope className="w-8 h-8 text-white" />
@@ -93,26 +88,30 @@ export const LoginPage: React.FC<LoginFormProps> = ({ onSubmit, isLoading = fals
             </div>
 
             <div className="flex flex-col gap-6">
-
               <div className="grid gap-2">
                 <Label htmlFor="email">Correo</Label>
-                <Input id="email" name="email" type="email" placeholder="usuario@oficentro.com" required />
+                <Input id="email" type="email" placeholder="usuario@oficentro.com" {...register("email")} />
+                {errors.email && (
+                  <p className="text-sm font-medium text-red-500 mt-1">{errors.email.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Contraseña</Label>
                 </div>
-                <Input id="password" name="password" type="password" required placeholder="Password" />
+                <Input id="password" type="password" placeholder="Password" {...register("password")} />
+                {errors.password && (
+                  <p className="text-sm font-medium text-red-500 mt-1">{errors.password.message}</p>
+                )}
               </div>
-              <Button type="submit" className="w-full bg-blue-500">
-                Ingresar
+              <Button type="submit" className="w-full bg-blue-500" disabled={isSubmitting}>
+                {isSubmitting ? 'Ingresando...' : 'Ingresar'}
               </Button>
             </div>
           </form>
           <div className="relative hidden bg-muted md:block">
             <img src={img_back} alt="Image" className="absolute inset-0 h-full w-full object-cover" />
           </div>
-
         </CardContent>
       </Card>
     </div>

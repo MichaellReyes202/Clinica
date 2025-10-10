@@ -33,6 +33,7 @@ import UsersManagementPage from "./admin/pages/admin/UsersManagementPage";
 import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
 import DashboardPage from "./admin/pages/dashboard/DashboardPage";
+import { AdminRoute, NotAuthenticatedRoute } from "./components/routes/ProtectedRoutes";
 
 
 
@@ -54,7 +55,7 @@ export const appRouter = createBrowserRouter([
   // auth routes 
   {
     path: '/auth',
-    element: <AuthLayout />,
+    element: <NotAuthenticatedRoute> <AuthLayout /></NotAuthenticatedRoute>,
     children: [
       {
         index: true,
@@ -63,17 +64,13 @@ export const appRouter = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />
-      },
-      {
-        path: 'register',
-        element: <h2>Register Page</h2>
       }
     ]
   },
   // Admin routes 
   {
     path: '/dashboard',
-    element: <AdminLayout />,
+    element: <AdminRoute><AdminLayout /></AdminRoute>,
     children: [
       {
         index: true,
