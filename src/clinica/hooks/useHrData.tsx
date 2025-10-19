@@ -1,4 +1,4 @@
-import type { EmployeeListDto, EmployesResponse } from "@/interfaces/Employes.response";
+import type { EmployesResponse } from "@/interfaces/Employes.response";
 import type { OptionDto } from "@/interfaces/OptionDto.response";
 import { getEmployeeAction } from "../actions/Employee.action";
 import { getPositionOption } from "../actions/Position.action";

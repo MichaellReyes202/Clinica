@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { useSpecialties } from "@/clinica/hooks/useSpecialties"
+import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 
 interface Specialty {
   id: string
@@ -24,14 +26,16 @@ interface Specialty {
 }
 
 export const SpecialtiesPage = () => {
-  const [specialties] = useState<Specialty[]>([
-    { id: "1", name: "Medicina General", description: "Atención médica general y preventiva", doctors: 3 },
-    { id: "2", name: "Pediatría", description: "Atención médica para niños y adolescentes", doctors: 2 },
-    { id: "3", name: "Ginecología", description: "Salud reproductiva femenina", doctors: 1 },
-    { id: "4", name: "Cardiología", description: "Enfermedades del corazón y sistema circulatorio", doctors: 1 },
-  ])
+
+  const { data, isLoading } = useSpecialties();
+
+  if (isLoading) {
+    return <CustomFullScreenLoading />;
+  }
+  const items = Array.isArray(data?.items) ? data.items : [];
 
   return (
+
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-lg bg-sidebar-primary/20 flex items-center justify-center">
@@ -51,6 +55,7 @@ export const SpecialtiesPage = () => {
               Agregar Especialidad
             </Button>
           </DialogTrigger>
+
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Agregar Nueva Especialidad</DialogTitle>
@@ -87,11 +92,11 @@ export const SpecialtiesPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {specialties.map((specialty) => (
-                <TableRow key={specialty.id}>
+              {items!.map((specialty) => (
+                <TableRow key={specialty.id.toString()}>
                   <TableCell className="font-medium">{specialty.name}</TableCell>
                   <TableCell>{specialty.description}</TableCell>
-                  <TableCell>{specialty.doctors} doctores</TableCell>
+                  <TableCell>{specialty.employees} doctores</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="sm">
@@ -108,6 +113,10 @@ export const SpecialtiesPage = () => {
           </Table>
         </CardContent>
       </Card>
+
+
+
+
     </div>
   )
 }

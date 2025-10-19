@@ -4,6 +4,12 @@ export interface EmployesResponse {
   employeeListDto: EmployeeListDto[];
 }
 
+export interface EmployesFilterResponse {
+  count: number;
+  pages: number;
+  employeeListSearchDto: EmployeeFilterDto[];
+}
+
 // interfaz para crear mostrar los empleados en la tabla
 export interface EmployeeListDto {
   id: number;
@@ -31,35 +37,32 @@ export interface Employee {
   hireDate: string; // Formato YYYY-MM-DD
   dni: string;
   email: string;
+  isActive: boolean;
 }
 
-// export interface EmployeesCreationDto {
-//   firstName: string;
-//   middleName?: string;
-//   lastName: string;
-//   secondLastName?: string;
-//   age: number;
-//   positionId: number; // Cargo que ocupa el empleado
-//   specialtyId?: number; // Especialidad a la que pertenece el empleado
-//   contactPhone?: string;
-//   hireDate: Date; // Fecha de contratación
-//   dni?: string; // Número de cédula de identidad de Nicaragua
-//   email: string; // Correo personal del empleado
-//   isActive: true;
-// }
+export interface EmployeeCreationDto {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  secondLastName?: string;
+  age: number;
+  positionId: number;
+  contactPhone?: string;
+  hireDate: string;
+  dni?: string;
+  specialtyId?: number | null;
+  email: string;
+}
 
-// {
-//     "id": 3,
-//     "firstName": "Michaell",
-//     "middleName": "Joel",
-//     "lastName": "Reyes",
-//     "secondLastName": "Aguilar",
-//     "age": 26,
-//     "positionId": 2,
-//     "specialtyId": 1,
-//     "contactPhone": "83718918",
-//     "hireDate": "2024-10-07",
-//     "dni": "401-101198-1003A",
-//     "email": "michaelljoel.reyes202@gmail.com",
-//     "isActive": true
-// }
+export interface EmployeeUpdateDto extends EmployeeCreationDto {
+  id: number;
+  isActive: boolean;
+}
+
+// interfaz para la busqueda de los empleados
+
+export interface EmployeeFilterDto {
+  id: number;
+  fullName: string;
+  dni: string;
+}

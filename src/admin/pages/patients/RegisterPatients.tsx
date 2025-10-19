@@ -11,9 +11,8 @@ export const RegisterPatients = () => {
 
   const handleSubmit = (data: any) => {
     console.log("Patient registered:", data)
-    // In production, this would save to database
-    alert("Paciente registrado exitosamente")
-    navigate("/dashboard/patients/search")
+    //alert("Paciente registrado exitosamente")
+    //navigate("/dashboard/patients/search")
   }
 
   return (

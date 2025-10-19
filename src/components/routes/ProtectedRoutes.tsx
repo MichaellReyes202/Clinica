@@ -14,14 +14,14 @@ export const AuthenticatedRoute = ({ children }: PropsWithChildren) => {
 
   return children;
 };
-// valido para cualquier otro tipo de role
+
 export const NotAuthenticatedRoute = ({ children }: PropsWithChildren) => {
   const { authStatus } = useAuthStore();
 
-  // if (authStatus === "checking") return null;
+  if (authStatus === "checking") return null;
 
   if (authStatus === "authenticated") {
-    return <Navigate to={'/'} />
+    return <Navigate to={'/dashboard'} />
   }
   return children;
 };
