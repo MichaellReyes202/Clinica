@@ -1,55 +1,57 @@
-
-
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Settings, Plus, Search, Edit, Trash2 } from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Search, Edit, Settings } from "lucide-react"
 
-interface User {
-  id: string
-  name: string
-  email: string
-  role: "admin" | "doctor" | "receptionist" | "manager"
-  status: "active" | "inactive"
-}
+import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
+// Importación del nuevo componente
+
+import { useUsers } from "@/clinica/hooks/useUsers"
+import { useRoles } from "@/clinica/hooks/useRoles"
+import { useUserMutation } from "@/clinica/hooks/useEmployes"
+import { CreateUserModal } from "@/admin/components/CreateUserModal"
+
 
 export default function UsersManagementPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [users] = useState<User[]>([
-    { id: "1", name: "Admin Principal", email: "admin@clinic.com", role: "admin", status: "active" },
-    { id: "2", name: "Dr. Juan Pérez", email: "juan@clinic.com", role: "doctor", status: "active" },
-    { id: "3", name: "Ana López", email: "ana@clinic.com", role: "receptionist", status: "active" },
-    { id: "4", name: "Carlos Ruiz", email: "carlos@clinic.com", role: "manager", status: "active" },
-  ])
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+  const [searchTerm, setSearchTerm] = useState("") // termino de busqueda para los empleados 
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const getRoleBadge = (role: string) => {
+
+  // 2. HOOKS DE DATOS Y MUTACIONES (DEBEN IR DESPUÉS DE LOS ESTADOS)
+  const { data: users, isLoading: isLoadingUsers } = useUsers()
+  const { data: roles, isLoading: isLoadingRoles } = useRoles()
+
+
+  const userMutation = useUserMutation();
+
+  // 3. LÓGICA DE MEMOIZACIÓN (ESTO DEBE IR ANTES DE CUALQUIER RETURN CONDICIONAL)
+  const filteredUsers = useMemo(() => {
+    if (!users?.userListDto) return [];
+    return users.userListDto.filter(
+      (user) =>
+        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+  }, [users, searchTerm]);
+
+  if (isLoadingUsers || isLoadingRoles) {
+    return <CustomFullScreenLoading />;
+  }
+
+  const getRoleBadge = (roles: string) => {
     const roleMap: Record<string, { label: string; variant: any }> = {
-      admin: { label: "Administrador", variant: "destructive" },
-      doctor: { label: "Doctor", variant: "default" },
-      receptionist: { label: "Recepcionista", variant: "secondary" },
-      manager: { label: "Gerente", variant: "default" },
+      Admin: { label: "Admin", variant: "destructive" },
+      Doctor: { label: "Doctor", variant: "default" },
+      Recepcionista: { label: "Recepcionista", variant: "secondary" },
+      Gerente: { label: "Gerente", variant: "default" },
     }
-    const roleInfo = roleMap[role] || { label: role, variant: "secondary" }
-    return <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
+    const primaryRole = roles.split(',')[0].trim();
+    const roleInfo = roleMap[primaryRole] || { label: primaryRole, variant: "secondary" }
+    return <Badge variant={roleInfo.variant}>{roles}</Badge>
   }
 
   return (
@@ -80,79 +82,51 @@ export default function UsersManagementPage() {
                 className="pl-9"
               />
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Agregar Usuario
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
-                  <DialogDescription>Configure el acceso del nuevo usuario</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Nombre Completo</Label>
-                    <Input placeholder="Ej: Dr. Juan Pérez" />
-                  </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input type="email" placeholder="email@clinic.com" />
-                  </div>
-                  <div>
-                    <Label>Rol</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccione un rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        <SelectItem value="doctor">Doctor</SelectItem>
-                        <SelectItem value="receptionist">Recepcionista</SelectItem>
-                        <SelectItem value="manager">Gerente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Contraseña Temporal</Label>
-                    <Input type="password" placeholder="••••••••" />
-                  </div>
-                  <Button className="w-full">Crear Usuario</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+
+            {/* Componente Modal de Creación de Usuario */}
+            <CreateUserModal
+              isModalOpen={isModalOpen}
+              setIsModalOpen={setIsModalOpen}
+              availableRoles={roles || []}
+              createMutation={userMutation.createMutation}
+            />
           </div>
 
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>USerId</TableHead>
+                <TableHead>EmpleadoId</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Rol</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead>Cedula</TableHead>
+                <TableHead>Ultimo Login</TableHead>
+                <TableHead>Fecha de Creacion</TableHead>
+                <TableHead>Roles</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell className="font-medium">{user.id}</TableCell>
+                  <TableCell>{user.employerId}</TableCell>
+                  <TableCell>{user.fullName}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
                   <TableCell>
-                    <Badge variant={user.status === "active" ? "secondary" : "destructive"}>
-                      {user.status === "active" ? "Activo" : "Inactivo"}
+                    <Badge variant={user.isActive ? "secondary" : "destructive"}>
+                      {user.isActive ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
+                  <TableCell>{user.dni}</TableCell>
+                  <TableCell>{user.lastLogin}</TableCell>
+                  <TableCell>{user.createdAt}</TableCell>
+                  <TableCell>{getRoleBadge(user.roles)}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="sm">
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

@@ -6,16 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Users, Search, Edit, Plus } from "lucide-react"
+import { Search, Edit, Plus, Loader } from "lucide-react"
 
 import { useEmployes } from "@/clinica/hooks/useEmployes"
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 import { EmployeesForm } from "@/admin/components/EmployeesForm"
-import type { Employee, EmployeeListDto } from "@/interfaces/Employes.response"
+
 import { usePosition } from "@/clinica/hooks/usePosition"
-import { useSpecialties } from "@/clinica/hooks/useSpecialties"
-import { useEmployeeDetail } from "./useEmployeeDetail"
+import { useSpecialtiesOption } from "@/clinica/hooks/useSpecialties"
+import { useEmployeeDetail } from "../../../clinica/hooks/useEmployeeDetail"
 import { useQueryClient } from "@tanstack/react-query"
+import { CustomPagination } from "@/components/custom/CustomPagination"
 
 
 
@@ -30,12 +31,10 @@ export const EmployeesPage = () => {
 
 
   const { data: positionsData, isLoading: isLoadingPositions } = usePosition();
-  const { data: specialtiesData, isLoading: isLoadingSpecialties } = useSpecialties();
+  const { data: specialtiesData, isLoading: isLoadingSpecialties } = useSpecialtiesOption();
   const { data: employeesData, isLoading: isLoadingEmployees } = useEmployes();
 
   const { employee, isLoading: isLoadingDetail } = useEmployeeDetail(employeeIdToEdit);
-
-
 
   // --- Lógica del Modal ---
   const handleOpenCreate = () => {
@@ -69,8 +68,6 @@ export const EmployeesPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* ... encabezado omitido ... */}
-
       <Card>
         <CardHeader>
           <CardTitle>Personal de la Clínica</CardTitle>
@@ -137,12 +134,10 @@ export const EmployeesPage = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenEdit(employee.id)}
-                    >
-                      <Edit className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(employee.id)}>
+                      {employeeIdToEdit === employee.id ? (<Loader className="h-4 w-4 animate-spin" />) : (<Edit className="h-4 w-4" />)}
+
+                      {/* {isLoadingDetail ? <Loader className="h-4 w-4" /> : <Edit className="h-4 w-4" />} */}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -151,6 +146,7 @@ export const EmployeesPage = () => {
           </Table>
         </CardContent>
       </Card>
+      <CustomPagination totalPages={employeesData?.pages || 0} />
     </div>
   );
 };

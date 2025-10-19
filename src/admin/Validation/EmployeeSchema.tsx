@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 export const EmployeeSchema = z.object({
+  // ID: Opcional, solo usado en el formulario para indicar que estamos editando.
+  id: z.number().optional(),
+
   firstName: z
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
@@ -59,8 +62,9 @@ export const EmployeeSchema = z.object({
     .email("El correo debe ser válido")
     .max(100, "El correo no puede exceder 100 caracteres")
     .optional(),
+  // Nuevo campo requerido por EmployesUpdateDto
+  isActive: z.boolean().optional(),
 });
 
-EmployeeSchema
 
 export type EmployeeFormValues = z.infer<typeof EmployeeSchema>;

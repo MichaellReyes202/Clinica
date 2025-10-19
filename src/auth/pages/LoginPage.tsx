@@ -33,12 +33,6 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-// interface LoginFormProps {
-//   onSubmit?: (data: LoginFormValues) => Promise<void> | void;
-//   isLoading?: boolean;
-//   className?: string;
-// }
-
 export const LoginPage = () => {
 
   const navigate = useNavigate();
