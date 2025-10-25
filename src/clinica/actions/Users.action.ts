@@ -28,6 +28,7 @@ export const getUsersAction = async (options: Options = {}): Promise<UserRespons
 
 export const createUserAction = async (payload: CreateUserPayload): Promise<UserCreation> => {
   const { data } = await clinicaApi.post<UserCreation>("/auth/register", payload);
+  console.log(data);
   return {
     ...data,
   };

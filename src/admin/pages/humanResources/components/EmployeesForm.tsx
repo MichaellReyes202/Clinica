@@ -22,7 +22,7 @@ import type { OptionDto } from "@/interfaces/OptionDto.response";
 import {
   EmployeeSchema,
   type EmployeeFormValues,
-} from "../Validation/EmployeeSchema";
+} from "../../../Validation/EmployeeSchema";
 import { useEmployeeMutation } from "@/clinica/hooks/useEmployeeMutation";
 import { Switch } from "@/components/ui/switch";
 
@@ -58,7 +58,6 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
 
   const { updateMutation, createMutation, isPosting } = useEmployeeMutation(onClose, setError);
 
-  // Resetear formulario cuando cambia el empleado
   useEffect(() => {
     if (initialEmployee) {
       reset({
@@ -103,11 +102,12 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
 
     if (isEditing && initialEmployee) {
       const updatePayload: EmployeeUpdateDto = { ...payload, id: values.id ?? 0, isActive: values.isActive ?? true };
-      updateMutation.mutate(updatePayload);
+      //updateMutation.mutate(updatePayload);
       console.log(updatePayload)
     } else {
       const createPayload: EmployeeCreationDto = { ...payload };
       createMutation.mutate(createPayload);
+      console.log(createPayload)
     }
   };
 
@@ -117,8 +117,7 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
       onClose();
     }}
     >
-      <DialogContent
-        className="sm:max-w-[650px] md:max-w-[750px]"
+      <DialogContent className="sm:max-w-[650px] md:max-w-[750px]"
         onInteractOutside={(e) => {
           if (isPosting) e.preventDefault();
         }}

@@ -30,8 +30,7 @@ export const useEmployeesQuery = (options: Options = {}) => {
   return useQuery<EmployesFilterResponse>({
     queryKey: ["employees", { limit, offset, query }],
     queryFn: () => getFilteredEmployees({ limit, offset, query }),
-    //keepPreviousData: true, // mantiene datos mientras se carga nueva página
-    staleTime: 1000 * 60 * 5, // cache válido por 5 minutos
+    staleTime: 1000 * 60 * 5,
   });
 }
 
@@ -41,8 +40,8 @@ export const useUserMutation = () => {
   const createMutation: UseMutationResult<UserCreation, AxiosError, CreateUserPayload> = useMutation({
     mutationFn: (info: CreateUserPayload) => createUserAction(info),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-      toast.success("Empleado creado correctamente");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["specialties"] });
     },
     onError: (error) => {
       const backendMessage = error.response?.data?.message || "Error inesperado";
@@ -58,10 +57,3 @@ export const useUserMutation = () => {
 };
 
 
-
-// Después de que la petición POST/PUT de la especialidad sea exitosa
-//queryClient.invalidateQueries({ queryKey: ['specialties'] });
-// Y si es un nuevo empleado o una edición:
-//queryClient.invalidateQueries({ queryKey: ['employees'] });
-
-//Con esta refactorización, obtienes la optimización que necesitas para la paginación y el control granular sobre qué datos se actualizan.

@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,11 +5,9 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Search, Edit, Plus, Loader } from "lucide-react"
-
 import { useEmployes } from "@/clinica/hooks/useEmployes"
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
-import { EmployeesForm } from "@/admin/components/EmployeesForm"
-
+import { EmployeesForm } from "@/admin/pages/humanResources/components/EmployeesForm"
 import { usePosition } from "@/clinica/hooks/usePosition"
 import { useSpecialtiesOption } from "@/clinica/hooks/useSpecialties"
 import { useEmployeeDetail } from "../../../clinica/hooks/useEmployeeDetail"
@@ -26,6 +22,8 @@ import { CustomPagination } from "@/components/custom/CustomPagination"
 export const EmployeesPage = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("")
+
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [employeeIdToEdit, setEmployeeIdToEdit] = useState<number | null>(null);
 
@@ -33,6 +31,8 @@ export const EmployeesPage = () => {
   const { data: positionsData, isLoading: isLoadingPositions } = usePosition();
   const { data: specialtiesData, isLoading: isLoadingSpecialties } = useSpecialtiesOption();
   const { data: employeesData, isLoading: isLoadingEmployees } = useEmployes();
+
+
 
   const { employee, isLoading: isLoadingDetail } = useEmployeeDetail(employeeIdToEdit);
 
@@ -66,6 +66,7 @@ export const EmployeesPage = () => {
     );
   });
 
+
   return (
     <div className="space-y-6">
       <Card>
@@ -78,12 +79,7 @@ export const EmployeesPage = () => {
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar empleado por nombre o DNI..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
+              <Input placeholder="Buscar empleado por nombre o DNI..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
             </div>
             <Button onClick={handleOpenCreate}>
               <Plus className="h-4 w-4 mr-2" />
@@ -136,8 +132,6 @@ export const EmployeesPage = () => {
                   <TableCell>
                     <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(employee.id)}>
                       {employeeIdToEdit === employee.id ? (<Loader className="h-4 w-4 animate-spin" />) : (<Edit className="h-4 w-4" />)}
-
-                      {/* {isLoadingDetail ? <Loader className="h-4 w-4" /> : <Edit className="h-4 w-4" />} */}
                     </Button>
                   </TableCell>
                 </TableRow>

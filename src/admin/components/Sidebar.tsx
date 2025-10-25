@@ -99,6 +99,8 @@ const menuItems: MenuItem[] = [
       { title: "Control de Asistencia", href: "/dashboard/hr/attendance" },
       { title: "Gestión de Empleados", href: "/dashboard/hr/employees" },
       { title: "Especialidades Médicas", href: "/dashboard/hr/specialties" },
+      { title: "Cargos", href: "/dashboard/hr/position" },
+
     ],
   },
   {

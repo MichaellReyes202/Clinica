@@ -34,6 +34,7 @@ import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
 import DashboardPage from "./admin/pages/dashboard/DashboardPage";
 import { AdminRoute, NotAuthenticatedRoute } from "./components/routes/ProtectedRoutes";
+import { PositionsPage } from "./admin/pages/humanResources/PositionsPage";
 
 
 
@@ -175,6 +176,10 @@ export const appRouter = createBrowserRouter([
       {
         path: 'hr/specialties',
         element: <SpecialtiesPage />
+      },
+      {
+        path: 'hr/position',
+        element: <PositionsPage />
       },
 
       // Reportes
