@@ -12,7 +12,7 @@ import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoad
 import { useUsers } from "@/clinica/hooks/useUsers"
 import { useRoles } from "@/clinica/hooks/useRoles"
 import { useUserMutation } from "@/clinica/hooks/useEmployes"
-import { CreateUserModal } from "@/admin/components/CreateUserModal"
+import { CreateUserModal } from "@/admin/pages/admin/components/CreateUserModal"
 
 
 export default function UsersManagementPage() {
@@ -95,7 +95,7 @@ export default function UsersManagementPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>USerId</TableHead>
+                <TableHead>UserId</TableHead>
                 <TableHead>EmpleadoId</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>

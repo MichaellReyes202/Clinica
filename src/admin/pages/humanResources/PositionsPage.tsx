@@ -1,5 +1,8 @@
 
 
+
+
+
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,11 +12,10 @@ import { Stethoscope, Plus, Edit, Loader } from "lucide-react"
 import { useSpecialties, useSpecialtiesDetail } from "@/clinica/hooks/useSpecialties"
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 import { useQueryClient } from "@tanstack/react-query"
-import { SpecialtiesForm } from "./components/SpecialtiesForm"
+import { PositionForm } from "./components/PositionForm"
 
 
-
-export const SpecialtiesPage = () => {
+export const PositionsPage = () => {
 
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,7 +78,7 @@ export const SpecialtiesPage = () => {
 
 
           {isModalOpen && (
-            <SpecialtiesForm
+            <PositionForm
               initialSpecialties={specialtiesIdToEdit ? specialtie : null}
               onClose={handleCloseModal}
               isOpen={isModalOpen && !isLoadingDetail} // Espera a que cargue

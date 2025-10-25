@@ -9,10 +9,3 @@ export interface Options {
   offset?: number | string;
   query?: string;
 }
-
-export interface SpecialtyListDto {
-  id: number;
-  name: string;
-  description: string;
-  employees: number;
-}

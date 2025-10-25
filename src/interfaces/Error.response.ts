@@ -1,5 +1,3 @@
-// src/interfaces/BackendError.ts
-
 // Estructura para el error singular (409, 404, 500)
 export interface SingularError {
   code: string; // Ej: "Conflict", "NotFound", "Unexpected"
