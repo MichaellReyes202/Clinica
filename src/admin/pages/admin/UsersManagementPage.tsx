@@ -61,7 +61,7 @@ export default function UsersManagementPage() {
           <Settings className="h-5 w-5 text-chart-1" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Gestión de Usuarios y Roles</h2>
+          <h2 className="text-2xl font-bold text-foreground">Gestión de Usuarios y Roles</h2>
           <p className="text-muted-foreground">Administre usuarios y permisos del sistema</p>
         </div>
       </div>

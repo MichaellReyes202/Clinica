@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 interface EmployeesFormProps {
   initialEmployee: Employee | null;
   onClose: () => void;
+
   positions: OptionDto[];
   specialties: OptionDto[];
   isOpen: boolean;
@@ -82,8 +83,6 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
 
   const onSubmit = (values: EmployeeFormValues) => {
     clearErrors();
-
-    // Sanitizar y asegurar tipos correctos
     const payload = {
       //Id: initialEmployee?.id ?? 0,
       firstName: values.firstName.trim(),
@@ -102,7 +101,7 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
 
     if (isEditing && initialEmployee) {
       const updatePayload: EmployeeUpdateDto = { ...payload, id: values.id ?? 0, isActive: values.isActive ?? true };
-      //updateMutation.mutate(updatePayload);
+      updateMutation.mutate(updatePayload);
       console.log(updatePayload)
     } else {
       const createPayload: EmployeeCreationDto = { ...payload };

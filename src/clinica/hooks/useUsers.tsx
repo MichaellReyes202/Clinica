@@ -14,7 +14,7 @@ export const useUsers = () => {
   return useQuery({
     queryKey: ['users', { query, limit, page }],
     queryFn: () => getUsersAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 20, // 10 minutes
   })
 
 }

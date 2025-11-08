@@ -66,12 +66,10 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
       alert("Error: Por favor, selecciona un empleado y un rol.");
       return;
     }
-
     const payload = {
       employeeId: selectedEmployee.id,
       roleId: Number(selectedRoleId)
     };
-
     createMutation.mutate(payload, {
       onSuccess: (data) => {
         setUserCreatedData(data);
@@ -81,7 +79,8 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
         resetForm();
       },
       onError: (error) => {
-        const backendMessage = error.response?.data?.message || "No se pudo crear el usuario";
+        console.log(error)
+        const backendMessage = "No se pudo crear el usuario";
         toast.error(backendMessage);
       },
     });
@@ -211,21 +210,11 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
                 <Label>Email</Label>
                 <Input type="text" value={userCreatedData.email} readOnly />
               </div>
-
               <div>
                 <Label>Contraseña</Label>
                 <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    value={userCreatedData.password}
-                    readOnly
-                    className="pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-                  >
+                  <Input type={showPassword ? "text" : "password"} value={userCreatedData.password} readOnly className="pr-10" />
+                  <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -236,11 +225,7 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
                   Cerrando en <span className="font-semibold">{countdown}</span> segundos...
                 </div>
               ) : (
-                <Button
-                  className="w-full mt-3"
-                  variant="secondary"
-                  onClick={() => setStartCountdown(true)} // 👈 Comienza la cuenta regresiva
-                >
+                <Button className="w-full mt-3" variant="secondary" onClick={() => setStartCountdown(true)}>
                   Cerrar
                 </Button>
               )}

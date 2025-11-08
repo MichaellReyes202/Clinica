@@ -63,7 +63,6 @@ export const useEmployeeMutation = (onSuccessAction?: () => void, setError?: Use
     // ----------------------------------------------------
     if (status === 404) {
       console.error("Recurso no encontrado (404):", (data as SingularError).description);
-      // Aquí se recomienda mostrar un Toast/Notificación global
       return;
     }
 

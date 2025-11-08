@@ -37,7 +37,6 @@ export const LoginPage = () => {
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -47,25 +46,20 @@ export const LoginPage = () => {
     },
   });
 
-  // Handler para el envío del formulario
   const handleLogin = async (data: LoginFormValues) => {
     setIsSubmitting(true);
     const isValid = await login(data.email, data.password);
     if (isValid) {
-      navigate("/dashboard")
+      navigate("/dashboard", { replace: true });
       return;
     }
     toast.error("Incorrect email or password");
     setIsSubmitting(false);
   };
-
-
   return (
     <div className="flex flex-col gap-6 animate-fade-in-up">
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-
-          {/* 1. VINCULAR el submit del formulario con el handler de RHF */}
           <form className="p-6 md:p-8" onSubmit={handleSubmit(handleLogin)}>
             <div className="text-center space-y-6 my-4">
               <div className="mx-auto w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
