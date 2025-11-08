@@ -1,4 +1,4 @@
-"use client"
+" "
 
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,78 +6,26 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { FlaskConical, Plus, Edit, Trash2 } from "lucide-react"
+import { FlaskConical, Plus, Edit, Trash2, } from "lucide-react"
+import { useExamsBySpecialty } from "@/clinica/hooks/useExamType"
+import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { CustomPagination } from "@/components/custom/CustomPagination"
 
-const mockExamCatalog = [
-  {
-    id: "1",
-    name: "Hemograma completo",
-    category: "Hematología",
-    price: "$15.00",
-    turnaround: "24 horas",
-    active: true,
-  },
-  {
-    id: "2",
-    name: "Glucosa en ayunas",
-    category: "Química sanguínea",
-    price: "$8.00",
-    turnaround: "2 horas",
-    active: true,
-  },
-  {
-    id: "3",
-    name: "Perfil lipídico",
-    category: "Química sanguínea",
-    price: "$20.00",
-    turnaround: "24 horas",
-    active: true,
-  },
-  {
-    id: "4",
-    name: "Examen general de orina",
-    category: "Urianálisis",
-    price: "$10.00",
-    turnaround: "4 horas",
-    active: true,
-  },
-  {
-    id: "5",
-    name: "Perfil tiroideo (TSH, T3, T4)",
-    category: "Endocrinología",
-    price: "$35.00",
-    turnaround: "48 horas",
-    active: true,
-  },
-  {
-    id: "6",
-    name: "Perfil hepático",
-    category: "Química sanguínea",
-    price: "$25.00",
-    turnaround: "24 horas",
-    active: true,
-  },
-  {
-    id: "7",
-    name: "Perfil renal",
-    category: "Química sanguínea",
-    price: "$22.00",
-    turnaround: "24 horas",
-    active: true,
-  },
-  {
-    id: "8",
-    name: "Electrolitos séricos",
-    category: "Química sanguínea",
-    price: "$18.00",
-    turnaround: "4 horas",
-    active: false,
-  },
-]
+
 
 export const ManageExamsPage = () => {
   const [showAddForm, setShowAddForm] = useState(false)
-  const [exams, setExams] = useState(mockExamCatalog)
+  //const [exams, setExams] = useState(mockExamCatalog)
+
+  const { data, isLoading } = useExamsBySpecialty();
+
+  if (isLoading) {
+    return <CustomFullScreenLoading />
+  }
+
+  const exams = data?.items || [];
+
 
   return (
     <div className="space-y-6">
@@ -87,14 +35,12 @@ export const ManageExamsPage = () => {
             <FlaskConical className="h-5 w-5 text-chart-1" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-foreground">Gestión de Exámenes</h2>
+            <h2 className="text-2xl font-bold text-foreground">Gestión de Exámenes</h2>
             <p className="text-muted-foreground">Administre el catálogo de exámenes disponibles</p>
           </div>
         </div>
         <Button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
-        >
+          onClick={() => setShowAddForm(!showAddForm)} className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Examen
         </Button>
@@ -119,10 +65,7 @@ export const ManageExamsPage = () => {
                 <Label htmlFor="category" className="text-card-foreground">
                   Categoría *
                 </Label>
-                <select
-                  id="category"
-                  className="w-full h-10 rounded-md border border-input bg-background text-foreground px-3 py-2"
-                >
+                <select id="category" className="w-full h-10 rounded-md border border-input bg-background text-foreground px-3 py-2" >
                   <option value="">Seleccionar categoría</option>
                   <option value="Hematología">Hematología</option>
                   <option value="Química sanguínea">Química sanguínea</option>
@@ -145,11 +88,7 @@ export const ManageExamsPage = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowAddForm(false)}
-                className="text-card-foreground border-border bg-transparent"
-              >
+              <Button variant="outline" onClick={() => setShowAddForm(false)} className="text-card-foreground border-border bg-transparent">
                 Cancelar
               </Button>
               <Button className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
@@ -160,7 +99,7 @@ export const ManageExamsPage = () => {
         </Card>
       )}
 
-      {/* Exams Catalog */}
+      {/* Catalogo de examenes */}
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-card-foreground">Catálogo de Exámenes</CardTitle>
@@ -168,55 +107,53 @@ export const ManageExamsPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {exams.map((exam) => (
-              <div key={exam.id} className="p-4 rounded-lg border border-border bg-secondary/20">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 flex-1">
-                    <FlaskConical className="h-5 w-5 text-chart-1" />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h3 className="font-semibold text-card-foreground">{exam.name}</h3>
-                        {exam.active ? (
-                          <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
-                            Activo
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">
-                            Inactivo
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                        <span>Categoría: {exam.category}</span>
-                        <span>Precio: {exam.price}</span>
-                        <span>Entrega: {exam.turnaround}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="text-card-foreground border-border bg-transparent"
-                      title="Editar"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="text-destructive border-border bg-transparent hover:bg-destructive/10"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
+
+            <Accordion type="single" className="w-full" defaultValue={exams[0].name}>
+
+              {
+                exams.map((ex) => (
+                  <AccordionItem value={ex.name}>
+                    <AccordionTrigger>{ex.name}</AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-4 text-balance">
+                      {ex.examTypes.map((exam) => (
+                        <div key={exam.id} className="p-4 rounded-lg border border-border bg-secondary/20">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 flex-1">
+                              <FlaskConical className="h-5 w-5 text-chart-1" />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <h3 className="font-semibold text-card-foreground">{exam.name}</h3>
+                                  {exam.isActive ?
+                                    (<Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30"> Activo</Badge>) :
+                                    (<Badge variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">Inactivo</Badge>)
+                                  }
+                                </div>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                                  <span>Precio: {exam.pricePaid}</span>
+                                  <span>Entrega: {exam.deliveryTime}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="icon" className="text-card-foreground border-border bg-transparent" title="Editar">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="outline" size="icon" className="text-destructive border-border bg-transparent hover:bg-destructive/10" title="Eliminar">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))
+              }
+            </Accordion>
           </div>
         </CardContent>
       </Card>
+      <CustomPagination totalPages={data?.pages || 0} />
     </div>
   )
 }

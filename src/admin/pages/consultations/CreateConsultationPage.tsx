@@ -1,4 +1,4 @@
-"use client"
+" "
 
 import type React from "react"
 
@@ -49,7 +49,6 @@ export default function CreateConsultationPage() {
         </div>
       </div>
 
-      {/* Patient Search */}
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-card-foreground">Seleccionar Paciente</CardTitle>

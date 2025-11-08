@@ -16,9 +16,6 @@ import { PrescribeExamsPage } from "./admin/pages/consultations/PrescribeExamsPa
 import { RegisterResultsPage } from "./admin/pages/laboratory/RegisterResultsPage";
 import { ExamHistoryPage } from "./admin/pages/laboratory/ExamHistoryPage";
 import { ManageExamsPage } from "./admin/pages/laboratory/ManageExamsPage";
-import { PharmacyAlertsPage } from "./admin/pages/pharmacy/PharmacyAlertsPage";
-import { PharmacyInventoryPage } from "./admin/pages/pharmacy/PharmacyInventoryPage";
-import { PharmacySuppliesPage } from "./admin/pages/pharmacy/PharmacySuppliesPage";
 import { GenerateInvoicePage } from "./admin/pages/billing/GenerateInvoicePage";
 import { RegisterPaymentsPage } from "./admin/pages/billing/RegisterPaymentsPage";
 import { CashClosurePage } from "./admin/pages/billing/CashClosurePage";
@@ -79,7 +76,7 @@ export const appRouter = createBrowserRouter([
       },
       // Pacientes
       {
-        path: 'patients/register',
+        path: 'patients/register/:id',
         element: <RegisterPatients />
       },
       {
@@ -132,19 +129,19 @@ export const appRouter = createBrowserRouter([
         element: <ManageExamsPage />
       },
 
-      // Farmacia
-      {
-        path: 'pharmacy/inventory',
-        element: <PharmacyInventoryPage />
-      },
-      {
-        path: 'pharmacy/alerts',
-        element: <PharmacyAlertsPage />
-      },
-      {
-        path: 'pharmacy/supplies',
-        element: <PharmacySuppliesPage />
-      },
+      //  Farmacia
+      // {
+      //   path: 'pharmacy/inventory',
+      //   element: <PharmacyInventoryPage />
+      // },
+      // {
+      //   path: 'pharmacy/alerts',
+      //   element: <PharmacyAlertsPage />
+      // },
+      // {
+      //   path: 'pharmacy/supplies',
+      //   element: <PharmacySuppliesPage />
+      // },
 
       // Facturación y Caja
       {

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createSpecialtiesAction, getSpecialtiesAction, getSpecialtiesDetail, getSpecialtiesOption, updateSpecialtiesAction } from "../actions/Specialties.action"
+import { createSpecialtiesAction, getDoctorBySpecialty, getSpecialtiesAction, getSpecialtiesDetail, getSpecialtiesOption, updateSpecialtiesAction } from "../actions/Specialties.action"
 import { useSearchParams } from "react-router"
 import type { UseFormSetError } from "react-hook-form"
 import type { SpecialtiesFormValues } from "@/admin/Validation/SpecialtiesSchema"
@@ -7,6 +7,7 @@ import type { AxiosError } from "axios"
 import type { SingularError, ValidationResponse } from "@/interfaces/Error.response"
 import type { SpecialtiesCreation, SpecialtiesUpdate } from "@/interfaces/Specialties.response"
 import { toast } from "sonner"
+import type { DoctorBySpecialtyDto, DoctorBySpecialtyListDto } from "@/interfaces/Appointment.response"
 
 export const useSpecialtiesOption = () => {
   return useQuery({
@@ -32,8 +33,6 @@ export const useSpecialties = () => {
 }
 
 // Obtener una especialidad por el id
-
-
 export const useSpecialtiesDetail = (specialtiesId: number | null) => {
   const query = useQuery<SpecialtiesUpdate, AxiosError>({
     queryKey: ["specialtiesDetail", specialtiesId],
@@ -171,4 +170,30 @@ export const useSpecialtiesMutation = (onSuccessAction?: () => void, setError?: 
     updateMutation,
     isPosting: createMutation.isPending || updateMutation.isPending,
   };
+}
+
+// Obtener los examenes por las especialidades
+
+export const useExamsBySpecialty = () => {
+  const [searchParams] = useSearchParams();
+
+  const query = searchParams.get('query') || undefined;
+  const limit = searchParams.get('limit') || 10;
+  const page = searchParams.get('page') || 1;
+
+  return useQuery({
+    queryKey: ["examsBySpecialty", { query, limit, page }],
+    queryFn: () => getSpecialtiesAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+    staleTime: 1000 * 60 * 60
+  })
+}
+
+// obtener todas las especialidades medicas con sus doctores asociados
+
+export const useGetDoctorBySpecialty = () => {
+  return useQuery<DoctorBySpecialtyDto[]>({
+    queryKey: ["getDoctorBySpecialty"],
+    queryFn: () => getDoctorBySpecialty(),
+    staleTime: Infinity
+  })
 }

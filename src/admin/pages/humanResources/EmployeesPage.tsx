@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Search, Edit, Plus, Loader } from "lucide-react"
+import { Search, Edit, Plus, Loader, UserRound } from "lucide-react"
 import { useEmployes } from "@/clinica/hooks/useEmployes"
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 import { EmployeesForm } from "@/admin/pages/humanResources/components/EmployeesForm"
-import { usePosition } from "@/clinica/hooks/usePosition"
 import { useSpecialtiesOption } from "@/clinica/hooks/useSpecialties"
 import { useEmployeeDetail } from "../../../clinica/hooks/useEmployeeDetail"
 import { useQueryClient } from "@tanstack/react-query"
 import { CustomPagination } from "@/components/custom/CustomPagination"
+import { usePositionOption } from "@/clinica/hooks/usePosition"
 
 
 
@@ -22,18 +22,11 @@ import { CustomPagination } from "@/components/custom/CustomPagination"
 export const EmployeesPage = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("")
-
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [employeeIdToEdit, setEmployeeIdToEdit] = useState<number | null>(null);
-
-
-  const { data: positionsData, isLoading: isLoadingPositions } = usePosition();
+  const { data: positionsData, isLoading: isLoadingPositions } = usePositionOption();
   const { data: specialtiesData, isLoading: isLoadingSpecialties } = useSpecialtiesOption();
   const { data: employeesData, isLoading: isLoadingEmployees } = useEmployes();
-
-
-
   const { employee, isLoading: isLoadingDetail } = useEmployeeDetail(employeeIdToEdit);
 
   // --- Lógica del Modal ---
@@ -69,6 +62,15 @@ export const EmployeesPage = () => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-lg bg-sidebar-primary/20 flex items-center justify-center">
+          <UserRound className="h-5 w-5 text-chart-1" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Empleados</h2>
+          <p className="text-muted-foreground">Gestione de los empleados disponibles en la clínica</p>
+        </div>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Personal de la Clínica</CardTitle>

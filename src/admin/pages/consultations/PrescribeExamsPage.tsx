@@ -50,7 +50,7 @@ export const PrescribeExamsPage = () => {
           <FlaskConical className="h-5 w-5 text-chart-1" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Prescribir Exámenes</h2>
+          <h2 className="text-2xl font-bold text-foreground">Prescribir Exámenes</h2>
           <p className="text-muted-foreground">Seleccione los exámenes de laboratorio necesarios</p>
         </div>
       </div>

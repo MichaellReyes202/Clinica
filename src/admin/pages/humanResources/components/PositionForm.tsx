@@ -1,9 +1,7 @@
 import { SpecialtiesSchema, type SpecialtiesFormValues } from "@/admin/Validation/SpecialtiesSchema"
-import { useSpecialtiesMutation } from "@/clinica/hooks/useSpecialties";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { SpecialtiesCreation, SpecialtiesUpdate } from "@/interfaces/Specialties.response";
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   Dialog,
@@ -15,17 +13,19 @@ import { Switch } from "@/components/ui/switch";
 import { useForm } from "react-hook-form"
 import { Label } from "@/components/ui/label";
 import { useEffect } from "react";
+import { usePositionMutation } from "@/clinica/hooks/usePosition";
+import type { PositionCreation, PositionUpdate } from "@/interfaces/Positions.response";
 
 
 
 
 interface Props {
-  initialSpecialties: SpecialtiesUpdate | null;
+  initialPosition: PositionUpdate | null;
   onClose: () => void;
   isOpen: boolean;
 }
 
-export const PositionForm = ({ initialSpecialties, onClose, isOpen }: Props) => {
+export const PositionForm = ({ initialPosition, onClose, isOpen }: Props) => {
 
   const { handleSubmit, register, setValue, watch, formState: { errors }, reset, setError, clearErrors } = useForm<SpecialtiesFormValues>({
     resolver: zodResolver(SpecialtiesSchema),
@@ -36,24 +36,24 @@ export const PositionForm = ({ initialSpecialties, onClose, isOpen }: Props) => 
       isActive: true
     }
   })
-  const isEditing = !!initialSpecialties;
+  const isEditing = !!initialPosition;
 
   // const { updateMutation, createMutation, isPosting } = useEmployeeMutation(onClose, setError);
-  const { updateMutation, createMutation, isPosting } = useSpecialtiesMutation(onClose, setError);
+  const { updateMutation, createMutation, isPosting } = usePositionMutation(onClose, setError);
 
   // Resetear formulario cuando cambia el empleado
   useEffect(() => {
-    if (initialSpecialties) {
+    if (initialPosition) {
       reset({
-        id: initialSpecialties.id,
-        name: initialSpecialties.name,
-        description: initialSpecialties.description ?? "",
-        isActive: initialSpecialties.isActive
+        id: initialPosition.id,
+        name: initialPosition.name,
+        description: initialPosition.description ?? "",
+        isActive: initialPosition.isActive
       });
     } else {
       reset();
     }
-  }, [initialSpecialties, reset]);
+  }, [initialPosition, reset]);
 
   const onSubmit = (values: SpecialtiesFormValues) => {
     clearErrors();
@@ -61,12 +61,12 @@ export const PositionForm = ({ initialSpecialties, onClose, isOpen }: Props) => 
       name: values.name.trim(),
       description: values.description?.trim()
     };
-    if (isEditing && initialSpecialties) {
-      const updatePayload: SpecialtiesUpdate = { ...payload, id: values.id ?? 0, isActive: values.isActive ?? true };
+    if (isEditing && initialPosition) {
+      const updatePayload: PositionUpdate = { ...payload, id: values.id ?? 0, isActive: values.isActive ?? true };
       updateMutation.mutate(updatePayload);
       console.log(updatePayload)
     } else {
-      const createPayload: SpecialtiesCreation = { ...payload };
+      const createPayload: PositionCreation = { ...payload };
       console.log(createPayload)
       createMutation.mutate(createPayload);
     }
@@ -95,7 +95,7 @@ export const PositionForm = ({ initialSpecialties, onClose, isOpen }: Props) => 
             </div>
             <div>
               <Label>Descripción</Label>
-              <Textarea {...register("description")} placeholder="Breve descripción de la especialidad" />
+              <Textarea {...register("description")} placeholder="Breve descripción de la especialidad" aria-label={initialPosition?.description} />
               {errors.name && (<p className="text-red-500 text-sm">{errors.description?.message}</p>)}
             </div>
           </div>

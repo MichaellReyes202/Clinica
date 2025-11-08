@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Stethoscope, Plus, Edit, Loader } from "lucide-react"
+import { Stethoscope, Plus, Edit, Loader, Search } from "lucide-react"
 import { useSpecialties, useSpecialtiesDetail } from "@/clinica/hooks/useSpecialties"
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 import { useQueryClient } from "@tanstack/react-query"
 import { SpecialtiesForm } from "./components/SpecialtiesForm"
+import { Input } from "@/components/ui/input"
+import { CustomPagination } from "@/components/custom/CustomPagination"
 
 
 
@@ -18,9 +20,7 @@ export const SpecialtiesPage = () => {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [specialtiesIdToEdit, setSpecialtiesIdToEdit] = useState<number | null>(null);
-
-
-
+  const [searchTerm, setSearchTerm] = useState("")
   const { data, isLoading } = useSpecialties();
   const { specialtie, isLoading: isLoadingDetail } = useSpecialtiesDetail(specialtiesIdToEdit);
 
@@ -29,23 +29,25 @@ export const SpecialtiesPage = () => {
     setSpecialtiesIdToEdit(null);
     setIsModalOpen(true);
   };
-
   const handleOpenEdit = (employeeId: number) => {
     setSpecialtiesIdToEdit(employeeId);
     setIsModalOpen(true);
   };
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSpecialtiesIdToEdit(null);
     queryClient.resetQueries({ queryKey: ["employeeDetail"] });
   };
-
-
   if (isLoading) {
     return <CustomFullScreenLoading />;
   }
-  const items = Array.isArray(data?.items) ? data.items : [];
+
+  const filteredSpecialties = (data?.items || []).filter((emp) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      emp.name.toLowerCase().includes(term)
+    );
+  });
 
   return (
 
@@ -55,26 +57,30 @@ export const SpecialtiesPage = () => {
           <Stethoscope className="h-5 w-5 text-chart-1" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Especialidades Médicas</h2>
+          <h2 className="text-2xl font-bold text-foreground">Especialidades Médicas</h2>
           <p className="text-muted-foreground">Gestione las especialidades disponibles en la clínica</p>
         </div>
       </div>
 
-      <Card>
+      <Card >
         <CardHeader>
           <CardTitle>Especialidades Disponibles</CardTitle>
           <CardDescription>Lista de especialidades médicas en la clínica</CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <div className="flex justify-end">
+        <CardContent className="space-y-4">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar especialidad" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+            </div>
             <Button onClick={handleOpenCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Especialidad
+              <Plus className="h-4 w-4 mr-2" /> Agregar Especialidad
             </Button>
+
           </div>
 
-
+          {/* Modal */}
           {isModalOpen && (
             <SpecialtiesForm
               initialSpecialties={specialtiesIdToEdit ? specialtie : null}
@@ -94,7 +100,7 @@ export const SpecialtiesPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items!.map((specialty) => (
+              {filteredSpecialties!.map((specialty) => (
                 <TableRow key={specialty.id.toString()}>
                   <TableCell className="font-medium">{specialty.name}</TableCell>
                   <TableCell>{specialty.description}</TableCell>
@@ -117,6 +123,8 @@ export const SpecialtiesPage = () => {
           </Table>
         </CardContent>
       </Card>
+      <CustomPagination totalPages={data?.pages || 0} />
+
     </div>
   )
 }

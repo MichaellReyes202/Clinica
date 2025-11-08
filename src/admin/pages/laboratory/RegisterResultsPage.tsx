@@ -20,7 +20,7 @@ export const RegisterResultsPage = () => {
           <FlaskConical className="h-5 w-5 text-chart-1" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Registrar Resultados</h2>
+          <h2 className="text-2xl font-bold text-foreground">Registrar Resultados</h2>
           <p className="text-muted-foreground">Ingrese los resultados de exámenes de laboratorio</p>
         </div>
       </div>

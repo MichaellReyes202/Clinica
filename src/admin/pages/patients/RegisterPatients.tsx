@@ -1,20 +1,26 @@
 
 
-import { PatientForm } from "@/admin/components/PatientForm";
+import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading";
+import { PatientForm } from "@/admin/pages/patients/components/PatientForm";
+import { useBloodTypeOption, useGenderOption } from "@/clinica/hooks/useCatalog";
+import { usePatientDetail } from "@/clinica/hooks/usePatient";
 import { UserPlus } from "lucide-react"
-import { useNavigate } from "react-router"
-
-
+import { Navigate, useNavigate, useParams } from "react-router";
 
 export const RegisterPatients = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-
-  const handleSubmit = (data: any) => {
-    console.log("Patient registered:", data)
-    //alert("Paciente registrado exitosamente")
-    //navigate("/dashboard/patients/search")
+  const { data: patientDetail, isLoading: isLoadingPatientDetail } = usePatientDetail(id || 'new');
+  const Title = id === 'new' ? 'Nuevo Paciente' : 'Editar Paciente';
+  const Subtitle = id === 'new' ? 'Ingrese los datos del nuevo paciente' : 'Modifique los datos del paciente';
+  const { data: sexoOptions, isLoading: isLoadingSexo } = useGenderOption();
+  const { data: bloodTypeOptions, isLoading: isLoadingBloodType } = useBloodTypeOption();
+  if (isLoadingSexo || isLoadingBloodType || isLoadingPatientDetail) {
+    return <CustomFullScreenLoading />;
   }
-
+  if (!patientDetail) {
+    return <Navigate to="/dashboard/patients/search" replace />;
+  }
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -22,12 +28,17 @@ export const RegisterPatients = () => {
           <UserPlus className="h-5 w-5 text-chart-1" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Registrar Paciente</h2>
-          <p className="text-muted-foreground">Ingrese los datos del nuevo paciente</p>
+          <h2 className="text-2xl font-bold text-foreground">{Title}</h2>
+          <p className="text-muted-foreground">{Subtitle}</p>
         </div>
       </div>
 
-      <PatientForm onSubmit={handleSubmit} submitLabel="Registrar Paciente" />
+      <PatientForm
+        initialPatient={patientDetail}
+        onSuccess={() => navigate("/dashboard/patients/search")}
+        sexoOptions={sexoOptions ?? []}
+        bloodTypeOptions={bloodTypeOptions ?? []}
+      />
     </div>
   )
 }
