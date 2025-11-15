@@ -163,8 +163,8 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
                 <SelectContent>
                   {
                     positions.map((pos) => (
-                      <SelectItem key={pos.Id} value={pos.Id.toString()}>
-                        {pos.Name}
+                      <SelectItem key={pos.id} value={pos.id.toString()}>
+                        {pos.name}
                       </SelectItem>
                     ))
                   }
@@ -182,8 +182,8 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
                 <SelectContent>
                   {
                     specialties.map((spec) => (
-                      <SelectItem key={spec.Id} value={spec.Id.toString()}>
-                        {spec.Name}
+                      <SelectItem key={spec.id} value={spec.id.toString()}>
+                        {spec.name}
                       </SelectItem>
                     ))
                   }

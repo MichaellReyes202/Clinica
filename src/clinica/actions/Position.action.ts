@@ -8,11 +8,7 @@ import { isAxiosError } from "axios";
 // Traer los cargos como una lista de opciones
 export const getPositionOption = async (): Promise<OptionDto[]> => {
   const { data } = await clinicaApi.get<OptionDto[]>("/position/listOption");
-  console.log(data);
-  return data.map((item: any) => ({
-    Id: item.id,
-    Name: item.name,
-  }));
+  return data;
 };
 
 // Funcio para obtener todos los cargos y mostrarlos en forma de tabla
