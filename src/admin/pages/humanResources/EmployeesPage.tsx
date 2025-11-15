@@ -15,18 +15,17 @@ import { CustomPagination } from "@/components/custom/CustomPagination"
 import { usePositionOption } from "@/clinica/hooks/usePosition"
 
 
-
-
-
-
 export const EmployeesPage = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [employeeIdToEdit, setEmployeeIdToEdit] = useState<number | null>(null);
+
   const { data: positionsData, isLoading: isLoadingPositions } = usePositionOption();
   const { data: specialtiesData, isLoading: isLoadingSpecialties } = useSpecialtiesOption();
   const { data: employeesData, isLoading: isLoadingEmployees } = useEmployes();
+
+
   const { employee, isLoading: isLoadingDetail } = useEmployeeDetail(employeeIdToEdit);
 
   // --- Lógica del Modal ---

@@ -3,11 +3,6 @@ import type { Employee, EmployesFilterResponse, EmployesResponse } from "@/inter
 import type { Options } from "@/interfaces/Paginated.response";
 import { isAxiosError } from "axios";
 
-// const transformDates = (employe: EmployeeListDto): EmployeeListDto => {
-//   employe.hireDate = new Date(employe.hireDate);
-//   return employe;
-// };
-
 export const getEmployeeAction = async (options: Options = {}): Promise<EmployesResponse> => {
   try {
     const { limit, offset, query } = options;

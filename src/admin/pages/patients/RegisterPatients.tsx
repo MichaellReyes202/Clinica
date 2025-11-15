@@ -1,5 +1,3 @@
-
-
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading";
 import { PatientForm } from "@/admin/pages/patients/components/PatientForm";
 import { useBloodTypeOption, useGenderOption } from "@/clinica/hooks/useCatalog";
@@ -10,11 +8,15 @@ import { Navigate, useNavigate, useParams } from "react-router";
 export const RegisterPatients = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const { data: patientDetail, isLoading: isLoadingPatientDetail } = usePatientDetail(id || 'new');
-  const Title = id === 'new' ? 'Nuevo Paciente' : 'Editar Paciente';
-  const Subtitle = id === 'new' ? 'Ingrese los datos del nuevo paciente' : 'Modifique los datos del paciente';
   const { data: sexoOptions, isLoading: isLoadingSexo } = useGenderOption();
   const { data: bloodTypeOptions, isLoading: isLoadingBloodType } = useBloodTypeOption();
+
+  const Title = id === 'new' ? 'Nuevo Paciente' : 'Editar Paciente';
+  const Subtitle = id === 'new' ? 'Ingrese los datos del nuevo paciente' : 'Modifique los datos del paciente';
+
+
   if (isLoadingSexo || isLoadingBloodType || isLoadingPatientDetail) {
     return <CustomFullScreenLoading />;
   }

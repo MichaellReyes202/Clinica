@@ -61,7 +61,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   checkAuthStatus: async () => {
     try {
       const { user, token } = await checkAuthAction();
-      console.log(user, token);
       set({
         user,
         token,

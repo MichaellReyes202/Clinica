@@ -27,7 +27,37 @@ export interface DoctorBySpecialtyListDto {
 export interface AppointmentCreateDto {
   patientId: number;
   employeeId: number;
-  startTime: string; // ISO string: "2025-11-08T09:30:00-03:00"
+  startTime: string;
   duration: number; // minutos
   reason?: string;
+}
+export interface AppointmentUpdateDto extends AppointmentCreateDto {
+  id: number;
+  statusId?: number;
+}
+
+export interface AppointmentResponseDto {
+  id: number;
+  patientId: number;
+  patientFullName: string;
+  employeeId: number; // id del doctor
+  doctorSpecialtyId: number;
+  doctorFullName: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  reason?: string;
+  status: string;
+  statusId: number;
+}
+
+export interface DoctorAvailabilityDto {
+  doctorId: number;
+  fullName: string;
+  specialtyName: string;
+  isAvailable: boolean;
+  nextAppointmentTime: string | null;
+  nextAppointmentDisplay: string;
+  availableSlotsToday: number;
+  appointmentsTodayCount: number;
 }

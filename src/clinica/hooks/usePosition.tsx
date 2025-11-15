@@ -8,12 +8,13 @@ import type { SpecialtiesFormValues } from "@/admin/Validation/SpecialtiesSchema
 import { toast } from "sonner"
 import type { UseFormSetError } from "react-hook-form"
 import type { PositionFormValues } from "@/admin/Validation/PositionSchema"
+import type { OptionDto } from "@/interfaces/OptionDto.response"
 
 
 
 // Obtener todas posiciones (para mostrar como una lista de opciones )
 export const usePositionOption = () => {
-  return useQuery({
+  return useQuery<OptionDto[]>({
     queryKey: ["positionOption"],
     queryFn: () => getPositionOption(),
     staleTime: 1000 * 60 * 60
