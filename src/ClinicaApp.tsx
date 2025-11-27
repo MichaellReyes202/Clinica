@@ -7,40 +7,42 @@ import { type PropsWithChildren } from 'react';
 import { useThemeStore } from './store/theme.store';
 import { useAuthStore } from './auth/store/auth.store';
 import { CustomFullScreenLoading } from './admin/components/CustomFullScreenLoading';
+import { ConfirmDialog } from './components/ConfirmDialog';
 
 
 const CheckAuthProvider = ({ children }: PropsWithChildren) => {
 
-  const { checkAuthStatus } = useAuthStore();
-  const { isLoading } = useQuery({
-    queryKey: ['auth'],
-    queryFn: checkAuthStatus,
-    retry: false,
-    refetchInterval: 1000 * 60 * 5,
-    refetchOnWindowFocus: false
-  });
-  if (isLoading) return <CustomFullScreenLoading />
-  return children;
+   const { checkAuthStatus } = useAuthStore();
+   const { isLoading } = useQuery({
+      queryKey: ['auth'],
+      queryFn: checkAuthStatus,
+      retry: false,
+      refetchInterval: 1000 * 60 * 5,
+      refetchOnWindowFocus: false
+   });
+   if (isLoading) return <CustomFullScreenLoading />
+   return children;
 }
 
 
 const queryClient = new QueryClient();
 export const ClinicaApp = () => {
 
-  const { theme } = useThemeStore();
-  return (
-    <div className={theme} >
-      <QueryClientProvider client={queryClient}>
-        <Toaster />
+   const { theme } = useThemeStore();
+   return (
+      <div className={theme} >
+         <QueryClientProvider client={queryClient}>
+            <Toaster />
+            <ConfirmDialog />
 
-        <CheckAuthProvider>
-          <RouterProvider router={appRouter} />
+            <CheckAuthProvider>
+               <RouterProvider router={appRouter} />
 
-        </CheckAuthProvider>
+            </CheckAuthProvider>
 
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </div>
-  )
+            <ReactQueryDevtools initialIsOpen={false} />
+         </QueryClientProvider>
+      </div>
+   )
 }
 
