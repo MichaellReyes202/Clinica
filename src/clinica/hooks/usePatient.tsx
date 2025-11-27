@@ -14,137 +14,139 @@ import type { PatientFormValue } from "@/admin/Validation/Patient.Schema";
 
 // trear una lista de paciente 
 export const usePatients = () => {
-  const [searchParams] = useSearchParams();
+   const [searchParams] = useSearchParams();
 
-  const query = searchParams.get('query') || undefined;
-  const limit = searchParams.get('limit') || 10;
-  const page = searchParams.get('page') || 1;
+   const query = searchParams.get('query') || undefined;
+   const limit = searchParams.get('limit') || 10;
+   const page = searchParams.get('page') || 1;
 
-  return useQuery<PaginatedResponseDto<PatientListDto>>({
-    queryKey: ['patients', { page, limit, query }],
-    queryFn: () => getPatientAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-    staleTime: 1000 * 60 * 60, // 1 hora
-  })
+   return useQuery<PaginatedResponseDto<PatientListDto>>({
+      queryKey: ['patients', { page, limit, query }],
+      queryFn: () => getPatientAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+      staleTime: 1000 * 60 * 60, // 1 hora
+   })
 }
 
 // hook de busqueda de empleados con filtros
 export const usePatientQuery = (options: Options = {}) => {
-  const { limit = 10, offset = 0, query = "" } = options;
+   const { limit = 10, offset = 0, query = "" } = options;
 
-  return useQuery<PaginatedResponseDto<PatientFilterResponse>>({
-    queryKey: ["patientsFilter", { limit, offset, query }],
-    queryFn: () => getFilteredPatient({ limit, offset, query }),
-    staleTime: 1000 * 60 * 60,
-  });
+   return useQuery<PaginatedResponseDto<PatientFilterResponse>>({
+      queryKey: ["patientsFilter", { limit, offset, query }],
+      queryFn: () => getFilteredPatient({ limit, offset, query }),
+      staleTime: 1000 * 60 * 60,
+   });
 }
 
 // hook para la busqueda del paciente por el id
 export const usePatientDetail = (patientId: string | null) => {
-  const query = useQuery<Patient, Error>({
-    queryKey: ["patientDetail"],
-    queryFn: () => getPatientDetail(patientId!),
-    enabled: patientId !== null, // solo ejecuta si hay un ID válido
-    staleTime: 0,                // sin cachear, siempre fresco
-    refetchOnWindowFocus: false,
-  });
-  return {
-    ...query,
-    patient: query.data ?? null,  // más claro para el formulario
-  };
+   const query = useQuery<Patient, Error>({
+      queryKey: ["patientDetail", patientId],
+      queryFn: () => getPatientDetail(patientId!),
+      enabled: patientId !== null, // solo ejecuta si hay un ID válido
+      staleTime: 0,                // sin cachear, siempre fresco
+      refetchOnWindowFocus: false,
+   });
+   return {
+      ...query,
+      patient: query.data ?? null,  // más claro para el formulario
+   };
 };
 
 export const usePatientMutation = (onSuccessAction?: () => void, setError?: UseFormSetError<PatientFormValue>) => {
-  const queryClient = useQueryClient();
+   const queryClient = useQueryClient();
 
-  const handleMutationError = (error: unknown) => {
-    const axiosError = error as AxiosError;
-    if (!axiosError?.response) {
-      console.error("Error no manejado:", error);
-      toast.error("Error desconocido en el servidor");
-      return;
-    }
-    const { status, data } = axiosError.response;
-
-    // ----------------------------------------------------
-    // A. Manejo de Errores 409 Conflict (Errores de Negocio con Campo)
-    // ----------------------------------------------------
-
-    if (status === 409) {
-      const serverError = data as SingularError;
-      if (setError && serverError.field) {
-        // Inyectamos el error en el campo específico del formulario
-        setError(serverError.field as keyof PatientFormValue, {
-          type: serverError.code,
-          message: serverError.description
-        });
-      } else {
-        toast(`Error 409 sin campo: ", ${serverError.description}`)
-        console.error("Error 409 sin campo: ", serverError.description);
+   const handleMutationError = (error: unknown) => {
+      const axiosError = error as AxiosError;
+      if (!axiosError?.response) {
+         console.error("Error no manejado:", error);
+         toast.error("Error desconocido en el servidor");
+         return;
       }
-      return;
-    }
+      const { status, data } = axiosError.response;
 
-    // ----------------------------------------------------
-    // B. Manejo de Errores 400 Bad Request (Validación Múltiple)
-    // ----------------------------------------------------
-    if (status === 400) {
-      const validationResponse = data as ValidationResponse;
-      if (setError && validationResponse.errors?.length) {
-        validationResponse.errors.forEach(err => {
-          // Inyectamos el error en cada campo afectado
-          setError(err.propertyName as keyof PatientFormValue, {
-            type: "validation",
-            message: err.errorMessage
-          });
-        });
-      } else {
-        // Manejar 400 sin lista de errores (ej: si el backend devuelve un 400 singular)
-        console.error("Error 400 genérico:", validationResponse.message);
+      // ----------------------------------------------------
+      // A. Manejo de Errores 409 Conflict (Errores de Negocio con Campo)
+      // ----------------------------------------------------
+
+      if (status === 409) {
+         const serverError = data as SingularError;
+         if (setError && serverError.field) {
+            // Inyectamos el error en el campo específico del formulario
+            setError(serverError.field as keyof PatientFormValue, {
+               type: serverError.code,
+               message: serverError.description
+            });
+         } else {
+            toast(`Error 409 sin campo: ", ${serverError.description}`)
+            console.error("Error 409 sin campo: ", serverError.description);
+         }
+         return;
       }
-      return;
-    }
 
-    // ----------------------------------------------------
-    // C. Manejo de Errores Globales (404, 500, etc.)
-    // ----------------------------------------------------
-    if (status === 404) {
-      console.error("Recurso no encontrado (404):", (data as SingularError).description);
-      return;
-    }
+      // ----------------------------------------------------
+      // B. Manejo de Errores 400 Bad Request (Validación Múltiple)
+      // ----------------------------------------------------
+      if (status === 400) {
+         const validationResponse = data as ValidationResponse;
+         if (setError && validationResponse.errors?.length) {
+            validationResponse.errors.forEach(err => {
+               // Inyectamos el error en cada campo afectado
+               setError(err.propertyName as keyof PatientFormValue, {
+                  type: "validation",
+                  message: err.errorMessage
+               });
+            });
+         } else {
+            // Manejar 400 sin lista de errores (ej: si el backend devuelve un 400 singular)
+            console.error("Error 400 genérico:", validationResponse.message);
+         }
+         return;
+      }
 
-    // Manejo de 500 o fallbacks
-    console.error(`Error del servidor ${status}:`, data);
+      // ----------------------------------------------------
+      // C. Manejo de Errores Globales (404, 500, etc.)
+      // ----------------------------------------------------
+      if (status === 404) {
+         console.error("Recurso no encontrado (404):", (data as SingularError).description);
+         return;
+      }
 
-  };
+      // Manejo de 500 o fallbacks
+      console.error(`Error del servidor ${status}:`, data);
 
-  const createMutation = useMutation({
-    mutationFn: (info: Patient) => createPatientAction(info),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
-      onSuccessAction?.();
-      toast.success("Paciente creado correctamente");
-    },
-    onError: handleMutationError,
-  });
+   };
 
-  const updateMutation = useMutation({
-    mutationFn: (info: Patient) => updatePatientAction(info.id!, info),
-    //  utilizar la optimistic update
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
-      queryClient.invalidateQueries({ queryKey: ["patientDetail"] });
-      queryClient.invalidateQueries({ queryKey: ["patientsFilter"] })
-      onSuccessAction?.();
-      toast.success("Paciente actualizado correctamente");
-    },
-    onError: handleMutationError,
-  });
+   const createMutation = useMutation({
+      mutationFn: (info: Patient) => createPatientAction(info),
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["patients"] });
+         queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+         onSuccessAction?.();
+         toast.success("Paciente creado correctamente");
+      },
+      onError: handleMutationError,
+   });
 
-  return {
-    createMutation,
-    updateMutation,
-    isPosting: createMutation.isPending || updateMutation.isPending,
-  };
+   const updateMutation = useMutation({
+      mutationFn: (info: Patient) => updatePatientAction(info.id!, info),
+      //  utilizar la optimistic update
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["patients"] });
+         queryClient.invalidateQueries({ queryKey: ["patientDetail"] });
+         queryClient.invalidateQueries({ queryKey: ["patientsFilter"] })
+         queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+         onSuccessAction?.();
+         toast.success("Paciente actualizado correctamente");
+      },
+      onError: handleMutationError,
+   });
+
+   return {
+      createMutation,
+      updateMutation,
+      isPosting: createMutation.isPending || updateMutation.isPending,
+   };
 };
 
 

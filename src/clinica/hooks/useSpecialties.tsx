@@ -10,190 +10,189 @@ import { toast } from "sonner"
 import type { DoctorBySpecialtyDto, DoctorBySpecialtyListDto } from "@/interfaces/Appointment.response"
 
 export const useSpecialtiesOption = () => {
-  return useQuery({
-    queryKey: ["specialtiesOption"],
-    queryFn: () => getSpecialtiesOption(),
-    staleTime: 1000 * 60 * 60
-  })
+   return useQuery({
+      queryKey: ["specialtiesOption"],
+      queryFn: () => getSpecialtiesOption(),
+      staleTime: 1000 * 60 * 60
+   })
 }
 
 // Obtener el total de las especialidaes medicas para mostrar en formato de tabla 
 export const useSpecialties = () => {
-  const [searchParams] = useSearchParams();
+   const [searchParams] = useSearchParams();
 
-  const query = searchParams.get('query') || undefined;
-  const limit = searchParams.get('limit') || 10;
-  const page = searchParams.get('page') || 1;
+   const query = searchParams.get('query') || undefined;
+   const limit = searchParams.get('limit') || 10;
+   const page = searchParams.get('page') || 1;
 
-  return useQuery({
-    queryKey: ["specialties", { query, limit, page }],
-    queryFn: () => getSpecialtiesAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-    staleTime: 1000 * 60 * 60
-  })
+   return useQuery({
+      queryKey: ["specialties", { query, limit, page }],
+      queryFn: () => getSpecialtiesAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+      staleTime: 1000 * 60 * 60
+   })
 }
 
 // Obtener una especialidad por el id
 export const useSpecialtiesDetail = (specialtiesId: number | null) => {
-  const query = useQuery<SpecialtiesUpdate, AxiosError>({
-    queryKey: ["specialtiesDetail", specialtiesId],
-    queryFn: () => getSpecialtiesDetail(specialtiesId!),
-    enabled: specialtiesId !== null, // solo se ejecuta si hay un Id valido
-    staleTime: 0,  // sin cachear , siempre el mas reciente 
-    refetchOnWindowFocus: false
-  })
-  return {
-    ...query,
-    specialtie: query.data ?? null, // mas claro para el formulario 
-  }
+   const query = useQuery<SpecialtiesUpdate, AxiosError>({
+      queryKey: ["specialtiesDetail", specialtiesId],
+      queryFn: () => getSpecialtiesDetail(specialtiesId!),
+      enabled: specialtiesId !== null, // solo se ejecuta si hay un Id valido
+      staleTime: 0,  // sin cachear , siempre el mas reciente 
+      refetchOnWindowFocus: false
+   })
+   return {
+      ...query,
+      specialtie: query.data ?? null, // mas claro para el formulario 
+   }
 }
 
 export const useSpecialtiesMutation = (onSuccessAction?: () => void, setError?: UseFormSetError<SpecialtiesFormValues>) => {
-  const queryClient = useQueryClient();
+   const queryClient = useQueryClient();
 
-  const handleMutationError = (error: unknown) => {
-    const axiosError = error as AxiosError;
-    if (!axiosError?.response) {
-      console.error("Error no manejado:", error);
-      toast.error("Error desconocido en el servidor");
-      return;
-    }
-    const { status, data } = axiosError.response;
-
-    // ----------------------------------------------------
-    // A. Manejo de Errores 409 Conflict (Errores de Negocio con Campo)
-    // ----------------------------------------------------
-
-    if (status === 409) {
-      const serverError = data as SingularError;
-      if (setError && serverError.field) {
-        // Inyectamos el error en el campo específico del formulario
-        setError(serverError.field as keyof SpecialtiesFormValues, {
-          type: serverError.code,
-          message: serverError.description
-        });
-      } else {
-        toast(`Error 409 sin campo: ", ${serverError.description}`)
-        console.error("Error 409 sin campo: ", serverError.description);
+   const handleMutationError = (error: unknown) => {
+      const axiosError = error as AxiosError;
+      if (!axiosError?.response) {
+         console.error("Error no manejado:", error);
+         toast.error("Error desconocido en el servidor");
+         return;
       }
-      return;
-    }
+      const { status, data } = axiosError.response;
 
-    // ----------------------------------------------------
-    // B. Manejo de Errores 400 Bad Request (Validación Múltiple)
-    // ----------------------------------------------------
-    if (status === 400) {
-      const validationResponse = data as ValidationResponse;
+      // ----------------------------------------------------
+      // A. Manejo de Errores 409 Conflict (Errores de Negocio con Campo)
+      // ----------------------------------------------------
 
-      if (setError && validationResponse.errors?.length) {
-        let hasFieldError = false;
-        let generalErrors: string[] = [];
-
-        validationResponse.errors.forEach(err => {
-          const fieldName = err.propertyName as keyof SpecialtiesFormValues;
-
-          // Verificamos si el campo pertenece al formulario
-          if (fieldName in ({} as SpecialtiesFormValues)) {
-            hasFieldError = true;
-            setError(fieldName, {
-              type: "validation",
-              message: err.errorMessage
+      if (status === 409) {
+         const serverError = data as SingularError;
+         if (setError && serverError.field) {
+            // Inyectamos el error en el campo específico del formulario
+            setError(serverError.field as keyof SpecialtiesFormValues, {
+               type: serverError.code,
+               message: serverError.description
             });
-          } else {
-            generalErrors.push(err.errorMessage);
-          }
-        });
-
-        // Si hay errores generales, los mostramos como toast
-        if (generalErrors.length > 0) {
-          toast.error(generalErrors.join("\n"), {
-            position: "top-right",
-            duration: 6000,
-          });
-        }
-
-        // Si no hay errores asignables, mostramos un mensaje genérico
-        if (!hasFieldError && generalErrors.length === 0) {
-          toast.error(`Error 400: ${validationResponse.message}`, {
-            position: "top-right",
-          });
-        }
-      } else {
-        // Manejar 400 sin lista de errores (caso inesperado)
-        toast.error(`Error 400: ${validationResponse.message}`, {
-          position: "top-right",
-        });
+         } else {
+            toast(`Error 409 sin campo: ", ${serverError.description}`)
+            console.error("Error 409 sin campo: ", serverError.description);
+         }
+         return;
       }
 
-      return;
-    }
+      // ----------------------------------------------------
+      // B. Manejo de Errores 400 Bad Request (Validación Múltiple)
+      // ----------------------------------------------------
+      if (status === 400) {
+         const validationResponse = data as ValidationResponse;
 
-    // ----------------------------------------------------
-    // C. Manejo de Errores Globales (404, 500, etc.)
-    // ----------------------------------------------------
-    if (status === 404) {
-      console.error("Recurso no encontrado (404):", (data as SingularError).description);
-      toast.error((data as SingularError).description)
-      return;
-    }
+         if (setError && validationResponse.errors?.length) {
+            let hasFieldError = false;
+            let generalErrors: string[] = [];
 
-    // Manejo de 500 o fallbacks
-    console.error(`Error del servidor ${status}:`, data);
+            validationResponse.errors.forEach(err => {
+               const fieldName = err.propertyName as keyof SpecialtiesFormValues;
 
-  };
+               // Verificamos si el campo pertenece al formulario
+               if (fieldName in ({} as SpecialtiesFormValues)) {
+                  hasFieldError = true;
+                  setError(fieldName, {
+                     type: "validation",
+                     message: err.errorMessage
+                  });
+               } else {
+                  generalErrors.push(err.errorMessage);
+               }
+            });
 
-  const createMutation = useMutation({
-    mutationFn: (info: SpecialtiesCreation) => createSpecialtiesAction(info),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["specialties"] });
-      queryClient.invalidateQueries({ queryKey: ["specialtiesOption"] });
-      onSuccessAction?.();
-      toast.success("Especialidad creada correctamente", {
-        position: "bottom-right"
-      });
-    },
-    onError: handleMutationError,
-  });
+            // Si hay errores generales, los mostramos como toast
+            if (generalErrors.length > 0) {
+               toast.error(generalErrors.join("\n"), {
+                  position: "top-right",
+                  duration: 6000,
+               });
+            }
 
-  const updateMutation = useMutation({
-    mutationFn: (info: SpecialtiesUpdate) => updateSpecialtiesAction(info.id, info),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["specialties"] }); // 
-      queryClient.invalidateQueries({ queryKey: ["specialtiesOption"] });
-      onSuccessAction?.();
-      toast.success("Especialidd actualizada correctamente");
-    },
-    onError: handleMutationError,
-  });
+            // Si no hay errores asignables, mostramos un mensaje genérico
+            if (!hasFieldError && generalErrors.length === 0) {
+               toast.error(`Error 400: ${validationResponse.message}`, {
+                  position: "top-right",
+               });
+            }
+         } else {
+            // Manejar 400 sin lista de errores (caso inesperado)
+            toast.error(`Error 400: ${validationResponse.message}`, {
+               position: "top-right",
+            });
+         }
 
-  return {
-    createMutation,
-    updateMutation,
-    isPosting: createMutation.isPending || updateMutation.isPending,
-  };
+         return;
+      }
+
+      // ----------------------------------------------------
+      // C. Manejo de Errores Globales (404, 500, etc.)
+      // ----------------------------------------------------
+      if (status === 404) {
+         console.error("Recurso no encontrado (404):", (data as SingularError).description);
+         toast.error((data as SingularError).description)
+         return;
+      }
+   };
+
+   const createMutation = useMutation({
+      mutationFn: (info: SpecialtiesCreation) => createSpecialtiesAction(info),
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["specialties"] });
+         queryClient.invalidateQueries({ queryKey: ["specialtiesOption"] });
+         queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
+         queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+         onSuccessAction?.();
+         toast.success("Especialidad creada correctamente", {
+            position: "bottom-right"
+         });
+      },
+      onError: handleMutationError,
+   });
+
+   const updateMutation = useMutation({
+      mutationFn: (info: SpecialtiesUpdate) => updateSpecialtiesAction(info.id, info),
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["specialties"] }); // 
+         queryClient.invalidateQueries({ queryKey: ["specialtiesOption"] });
+         queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+         onSuccessAction?.();
+         toast.success("Especialidd actualizada correctamente");
+      },
+      onError: handleMutationError,
+   });
+
+   return {
+      createMutation,
+      updateMutation,
+      isPosting: createMutation.isPending || updateMutation.isPending,
+   };
 }
 
 // Obtener los examenes por las especialidades
 
 export const useExamsBySpecialty = () => {
-  const [searchParams] = useSearchParams();
+   const [searchParams] = useSearchParams();
 
-  const query = searchParams.get('query') || undefined;
-  const limit = searchParams.get('limit') || 10;
-  const page = searchParams.get('page') || 1;
+   const query = searchParams.get('query') || undefined;
+   const limit = searchParams.get('limit') || 10;
+   const page = searchParams.get('page') || 1;
 
-  return useQuery({
-    queryKey: ["examsBySpecialty", { query, limit, page }],
-    queryFn: () => getSpecialtiesAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-    staleTime: 1000 * 60 * 60
-  })
+   return useQuery({
+      queryKey: ["examsBySpecialty", { query, limit, page }],
+      queryFn: () => getSpecialtiesAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+      staleTime: 1000 * 60 * 60
+   })
 }
 
 // obtener todas las especialidades medicas con sus doctores asociados
 
 export const useGetDoctorBySpecialty = () => {
-  return useQuery<DoctorBySpecialtyDto[]>({
-    queryKey: ["getDoctorBySpecialty"],
-    queryFn: () => getDoctorBySpecialty(),
-    staleTime: Infinity
-  })
+   return useQuery<DoctorBySpecialtyDto[]>({
+      queryKey: ["getDoctorBySpecialty"],
+      queryFn: () => getDoctorBySpecialty(),
+      staleTime: Infinity
+   })
 }

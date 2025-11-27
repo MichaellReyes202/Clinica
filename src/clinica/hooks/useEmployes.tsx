@@ -11,48 +11,48 @@ import type { AxiosError } from "axios";
 
 // trear una lista de empleados
 export const useEmployes = () => {
-  const [searchParams] = useSearchParams();
+   const [searchParams] = useSearchParams();
 
-  const query = searchParams.get('query') || undefined;
-  const limit = searchParams.get('limit') || 10;
-  const page = searchParams.get('page') || 1;
+   const query = searchParams.get('query') || undefined;
+   const limit = searchParams.get('limit') || 10;
+   const page = searchParams.get('page') || 1;
 
-  return useQuery({
-    queryKey: ['employees', { query, limit, page }],
-    queryFn: () => getEmployeeAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-    staleTime: 1000 * 60 * 60, // 1 hora
-  })
+   return useQuery({
+      queryKey: ['employees', { query, limit, page }],
+      queryFn: () => getEmployeeAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+      staleTime: 1000 * 60 * 60, // 1 hora
+   })
 }
 
 // hook de busqueda de empleados con filtros
 export const useEmployeesQuery = (options: Options = {}) => {
-  const { limit = 10, offset = 0, query = "" } = options;
+   const { limit = 10, offset = 0, query = "" } = options;
 
-  return useQuery<EmployesFilterResponse>({
-    queryKey: ["employeesFilter", { limit, offset, query }],
-    queryFn: () => getFilteredEmployees({ limit, offset, query }),
-    staleTime: 1000 * 60 * 5,
-  });
+   return useQuery<EmployesFilterResponse>({
+      queryKey: ["employeesFilter", { limit, offset, query }],
+      queryFn: () => getFilteredEmployees({ limit, offset, query }),
+      staleTime: 1000 * 60 * 5,
+   });
 }
 
 export const useUserMutation = () => {
-  const queryClient = useQueryClient();
+   const queryClient = useQueryClient();
 
-  const createMutation: UseMutationResult<UserCreation, AxiosError, CreateUserPayload> = useMutation({
-    mutationFn: (info: CreateUserPayload) => createUserAction(info),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["specialties"] });
-    },
-    onError: (error) => {
-      console.error("Error en la creación:", error);
-    },
-  });
+   const createMutation: UseMutationResult<UserCreation, AxiosError, CreateUserPayload> = useMutation({
+      mutationFn: (info: CreateUserPayload) => createUserAction(info),
+      onSuccess: () => {
+         queryClient.invalidateQueries({ queryKey: ["users"] });
+         queryClient.invalidateQueries({ queryKey: ["specialties"] });
+      },
+      onError: (error) => {
+         console.error("Error en la creación:", error);
+      },
+   });
 
-  return {
-    createMutation,
-    isPosting: createMutation.isPending
-  };
+   return {
+      createMutation,
+      isPosting: createMutation.isPending
+   };
 };
 
 
