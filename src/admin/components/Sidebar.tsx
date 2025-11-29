@@ -5,15 +5,10 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
 import {
-
     LayoutDashboard, Users, Calendar, Stethoscope, FlaskConical, UserCog, FileText, Settings, ChevronDown,
-
     ChevronRight,
-
     Menu,
-
     X,
-
     ChevronLeft,
 
 } from "lucide-react"
@@ -27,17 +22,11 @@ import { useAuthStore } from "@/auth/store/auth.store"
 
 
 interface MenuItem {
-
     title: string
-
     icon: React.ComponentType<{ className?: string }>
-
     href?: string
-
     allowedRoles?: number[]
-
     submenu?: { title: string; href: string, baseUrl: string, allowedRoles?: number[] }[]
-
 }
 
 
@@ -45,13 +34,9 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
 
     {
-
         title: "Dashboard",
-
         icon: LayoutDashboard,
-
         href: "/dashboard",
-
         allowedRoles: [1, 2, 3, 4, 5]
 
     },
@@ -59,122 +44,73 @@ const menuItems: MenuItem[] = [
     {
 
         title: "Citas",
-
         icon: Calendar,
-
         allowedRoles: [1, 2, 3], // Admin, Recepción, Médico (para ver agenda)
-
         submenu: [
-
             { title: "Mi Agenda", href: "/dashboard/appointments/today", baseUrl: "/dashboard/appointments/today", allowedRoles: [3] },
-
             { title: "Agendar Cita", href: "/dashboard/appointments/schedule", baseUrl: "/dashboard/appointments/schedule", allowedRoles: [1, 2] },
-
             { title: "Disponibilidad", href: "/dashboard/appointments/availability", baseUrl: "/dashboard/appointments/availability", allowedRoles: [1, 2] },
-
         ],
-
     },
-
     {
-
         title: "Pacientes",
-
         icon: Users,
-
         allowedRoles: [1, 2, 3, 4, 5],
-
         submenu: [
-
             { title: "Buscar Paciente", href: "/dashboard/patients/search", baseUrl: "/dashboard/patients/search", allowedRoles: [1, 2, 3, 4, 5] },
-
             { title: "Registrar Nuevo", href: "/dashboard/patients/register/new", baseUrl: "/dashboard/patients/register", allowedRoles: [1, 2] },
-
         ],
-
     },
 
     {
-
         title: "Consultas",
-
         icon: Stethoscope,
-
         allowedRoles: [3],
-
         submenu: [
-
             // Esta opción es para emergencias o pacientes sin cita previa
-
             { title: "Consulta", href: "/dashboard/consultations/create", baseUrl: "/dashboard/consultations/create", allowedRoles: [3] },
-
             { title: "Historial de Consultas", href: "/dashboard/consultations/history", baseUrl: "/dashboard/consultations/history", allowedRoles: [3] },
-
         ],
-
     },
-
     {
-
         title: "Laboratorio",
-
         icon: FlaskConical,
-
         allowedRoles: [1, 5],
-
         submenu: [
-
             { title: "Registrar Resultados", href: "/dashboard/laboratory/results", baseUrl: "/dashboard/laboratory/results", allowedRoles: [1, 5] },
-
             { title: "Historial Exámenes", href: "/dashboard/laboratory/history", baseUrl: "/dashboard/laboratory/history", allowedRoles: [1, 5] },
-
             { title: "Catálogo Exámenes", href: "/dashboard/laboratory/manage", baseUrl: "/dashboard/laboratory/manage", allowedRoles: [1, 5] },
-
         ],
-
     },
-
     {
-
         title: "Recursos Humanos",
-
         icon: UserCog,
-
         allowedRoles: [1],
-
         submenu: [
-
             { title: "Empleados", href: "/dashboard/hr/employees", baseUrl: "/dashboard/hr/employees", allowedRoles: [1] },
-
             // { title: "Asistencia", href: "/dashboard/hr/attendance", baseUrl: "/dashboard/hr/attendance" },
-
             { title: "Especialidades", href: "/dashboard/hr/specialties", baseUrl: "/dashboard/hr/specialties", allowedRoles: [1] },
-
             { title: "Cargos", href: "/dashboard/hr/position", baseUrl: "/dashboard/hr/position", allowedRoles: [1] },
-
         ],
 
     },
-
     {
-
         title: "Reportes",
-
         icon: FileText,
-
-        allowedRoles: [1],
-
-        submenu: [
-
-            { title: "Pacientes", href: "/dashboard/reports/patients", baseUrl: "/dashboard/reports/patients", allowedRoles: [1] },
-
-            { title: "Asistencia", href: "/dashboard/reports/attendance", baseUrl: "/dashboard/reports/attendance", allowedRoles: [1] },
-
-            { title: "Financiero", href: "/dashboard/reports/financial", baseUrl: "/dashboard/reports/financial", allowedRoles: [1] },
-
-        ],
-
+        href: "/dashboard/reports",
+        allowedRoles: [1, 4]
     },
+
+    // {
+    //     title: "Reportes",
+    //     icon: FileText,
+    //     allowedRoles: [1],
+    //     submenu: [
+    //         { title: "Pacientes", href: "/dashboard/reports/patients", baseUrl: "/dashboard/reports/patients", allowedRoles: [1] },
+    //         { title: "Asistencia", href: "/dashboard/reports/attendance", baseUrl: "/dashboard/reports/attendance", allowedRoles: [1] },
+    //         { title: "Financiero", href: "/dashboard/reports/financial", baseUrl: "/dashboard/reports/financial", allowedRoles: [1] },
+    //     ],
+    // },
 
     {
 

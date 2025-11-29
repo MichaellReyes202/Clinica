@@ -30,8 +30,8 @@ export const ReportsPage = () => {
         try {
             const response = await clinicaApi.get(`/reports/${reportType}`, {
                 params: {
-                    from: format(date.from, 'yyyy-MM-dd'),
-                    to: format(date.to, 'yyyy-MM-dd'),
+                    from: date.from.toISOString(),
+                    to: date.to.toISOString(),
                     format: formatType
                 },
                 responseType: 'blob'
@@ -159,26 +159,12 @@ export const ReportsPage = () => {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex gap-3 mt-4">
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 gap-2"
-                                    onClick={() => handleDownload(report.id, 'pdf')}
-                                    disabled={!!loading}
-                                >
-                                    {loading === `${report.id}-pdf` ? (
-                                        <span className="animate-spin">⏳</span>
-                                    ) : (
-                                        <FileText className="h-4 w-4 text-red-500" />
-                                    )}
+                            <div className="flex flex-col md:flex-row gap-3 mt-4">
+                                <Button variant="outline" className="flex-1 gap-2" onClick={() => handleDownload(report.id, 'pdf')} disabled={!!loading}>
+                                    {loading === `${report.id}-pdf` ? <span className="animate-spin">⏳</span> : <FileText className="h-4 w-4 text-red-500" />}
                                     Descargar PDF
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 gap-2"
-                                    onClick={() => handleDownload(report.id, 'excel')}
-                                    disabled={!!loading}
-                                >
+                                <Button variant="outline" className="flex-1 gap-2" onClick={() => handleDownload(report.id, 'excel')} disabled={!!loading}>
                                     {loading === `${report.id}-excel` ? (
                                         <span className="animate-spin">⏳</span>
                                     ) : (

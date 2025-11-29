@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Stethoscope, User as UserIcon } from "lucide-react";
-import { PatientRecord } from "@/admin/components/PatientRecord";
+import { PatientHistoryContent } from "@/admin/pages/patients/components/PatientHistoryContent";
 import { SearchPatient } from "@/admin/pages/appointments/components/SearchPatient";
 import { usePatientDetail } from "@/clinica/hooks/usePatient";
 import { useDoctorsAvailability } from "@/clinica/hooks/useAppointments";
@@ -112,9 +112,10 @@ export default function CreateConsultationPage() {
         }
 
         setIsProcessing(true);
+        let appointmentId: number | null = null;
         try {
             // 1. Create Appointment (Scheduled)
-            const appointmentId = await createAppointmentAction({
+            appointmentId = await createAppointmentAction({
                 patientId: Number(selectedPatientId),
                 employeeId: Number(selectedDoctorId),
                 // Send local time as ISO string without 'Z' so backend interprets it as local
@@ -142,12 +143,44 @@ export default function CreateConsultationPage() {
 
         } catch (error: any) {
             console.error("Error starting consultation:", error);
+
+            // Rollback: If appointment was created but consultation failed, cancel the appointment
+            // We can reuse updateAppointmentStatusAction to set it to Cancelled (5) or Deleted (if we had an action)
+            // For now, let's set it to Cancelled (5) so it doesn't show up as "Confirmed"
+            if (appointmentId) {
+                try {
+                    await updateAppointmentStatusAction({
+                        AppointmenId: appointmentId,
+                        StatusId: 5 // Cancelled
+                    });
+                    console.log("Rolled back appointment to Cancelled status");
+                } catch (rollbackError) {
+                    console.error("Failed to rollback appointment:", rollbackError);
+                }
+            }
+
+            if (error.response?.data) {
+                console.log("Full error response:", JSON.stringify(error.response.data, null, 2));
+            }
             const errorMessage = error.response?.data?.message || error.message || "Error al iniciar la consulta.";
             const validationErrors = error.response?.data?.errors;
+            const errorDescription = error.response?.data?.description;
+
+            // Handle specific overlap error
+            if (errorDescription === "The patient already has an appointment at that time.") {
+                toast.error("El paciente ya tiene una cita activa o programada en este horario.", {
+                    description: "Por favor revise la lista de citas del día para iniciar la consulta existente."
+                });
+                return;
+            }
 
             if (validationErrors && Array.isArray(validationErrors)) {
-                validationErrors.forEach((err: any) => {
-                    toast.error(`${err.propertyName}: ${err.errorMessage}`);
+                // Fix hydration error: Don't render UL inside toast if toast uses P
+                // Instead, join errors with newlines
+                const errorList = validationErrors.map((err: any) => `• ${err.propertyName}: ${err.errorMessage}`).join("\n");
+                toast.error("Error de validación", {
+                    description: errorList,
+                    style: { whiteSpace: 'pre-line' }
                 });
             } else {
                 toast.error(errorMessage);
@@ -198,7 +231,7 @@ export default function CreateConsultationPage() {
             {/* Patient Record & Action */}
             {showPatientRecord && mockPatient && !isLoadingPatientDetail && (
                 <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-                    <PatientRecord patient={mockPatient} />
+                    <PatientHistoryContent patientId={Number(selectedPatientId)} />
 
                     <Card className="border-primary/20 shadow-md bg-primary/5">
                         <CardHeader>

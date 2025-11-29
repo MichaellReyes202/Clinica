@@ -41,3 +41,7 @@ export const getAppointmentDetailAction = async (id: string): Promise<Appointmen
     const { data } = await clinicaApi.get<AppointmentDetailDto>(`/appointment/${id}`);
     return data;
 };
+
+export const deleteAppointmentAction = async (id: number): Promise<void> => {
+    await clinicaApi.delete(`/appointment/${id}`);
+};

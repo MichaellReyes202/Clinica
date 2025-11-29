@@ -19,4 +19,6 @@ export interface ExamPendingDto {
     statusName: string;
     results?: string;
     createdAt: string;
+    specialtyId: number;
+    specialtyName: string;
 }

@@ -1,5 +1,6 @@
 import { clinicaApi } from "@/api/clinicaApi";
 import type { AuthResponse } from "../interfaces/auth.response";
+import type { UserCreation } from "@/interfaces/Users.response";
 
 export const loginAction = async (email: string, password: string): Promise<AuthResponse> => {
   try {
@@ -38,5 +39,15 @@ export const checkAuthAction = async (): Promise<AuthResponse> => {
   } catch (error) {
     localStorage.removeItem("token");
     throw new Error("Token expired or not valid");
+  }
+};
+
+export const resetPasswordAction = async (id: number): Promise<UserCreation> => {
+  try {
+    const { data } = await clinicaApi.post<UserCreation>(`/auth/reset-password/${id}`);
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 };

@@ -2,11 +2,14 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { FlaskConical, Eye, Download, Calendar as CalendarIcon, User, LayoutGrid, List, X } from "lucide-react"
+import { FlaskConical, Calendar as CalendarIcon, User, LayoutGrid, List, X, Loader2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useSpecialtiesOption } from "@/clinica/hooks/useSpecialties"
 import { FilterSection } from "@/admin/components/filters/FilterSection"
 import { useUrlFilters } from "@/clinica/hooks/useUrlFilters"
+import { useAllExams } from "@/clinica/hooks/useLaboratory"
+import { Link } from "react-router"
+
 
 // Estados de exámenes
 // 1 - Programado
@@ -14,99 +17,18 @@ import { useUrlFilters } from "@/clinica/hooks/useUrlFilters"
 // 3 - En Proceso
 // 4 - Cancelado
 
-const mockExamHistory = [
-    {
-        id: "1",
-        patient: "María González Pérez",
-        examType: "Hemograma completo",
-        specialty: "Hematología",
-        date: "2025-11-28",
-        statusId: 2, // Realizado
-        results: "Valores normales. Hemoglobina: 13.5 g/dL, Leucocitos: 7,200/μL, Plaquetas: 250,000/μL",
-        doctor: "Dr. Juan Pérez",
-    },
-    {
-        id: "2",
-        patient: "Carlos Ruiz Martínez",
-        examType: "Glucosa en ayunas",
-        specialty: "Endocrinología",
-        date: "2025-11-27",
-        statusId: 2, // Realizado
-        results: "95 mg/dL - Valor normal",
-        doctor: "Dra. Ana López",
-    },
-    {
-        id: "3",
-        patient: "Ana Martínez López",
-        examType: "Perfil lipídico",
-        specialty: "Cardiología",
-        date: "2025-11-26",
-        statusId: 3, // En Proceso
-        results: "Procesando muestras...",
-        doctor: "Dr. Juan Pérez",
-    },
-    {
-        id: "4",
-        patient: "José López García",
-        examType: "Perfil tiroideo",
-        specialty: "Endocrinología",
-        date: "2025-11-25",
-        statusId: 1, // Programado
-        results: "Programado para mañana",
-        doctor: "Dr. Roberto Silva",
-    },
-    {
-        id: "5",
-        patient: "Laura Pérez Ramírez",
-        examType: "Examen general de orina",
-        specialty: "Nefrología",
-        date: "2025-11-24",
-        statusId: 2, // Realizado
-        results: "Aspecto: claro, Color: amarillo, pH: 6.0, Proteínas: negativo, Glucosa: negativo",
-        doctor: "Dra. Ana López",
-    },
-    {
-        id: "6",
-        patient: "Pedro Ramírez Castro",
-        examType: "Perfil hepático",
-        specialty: "Gastroenterología",
-        date: "2025-11-23",
-        statusId: 1, // Programado
-        results: "Programado para el 25/11",
-        doctor: "Dr. Juan Pérez",
-    },
-    {
-        id: "7",
-        patient: "Sofía Hernández",
-        examType: "Radiografía de tórax",
-        specialty: "Radiología",
-        date: "2025-11-22",
-        statusId: 4, // Cancelado
-        results: "Cancelado por el paciente",
-        doctor: "Dr. Carlos Méndez",
-    },
-    {
-        id: "8",
-        patient: "Roberto Díaz",
-        examType: "Electrocardiograma",
-        specialty: "Cardiología",
-        date: "2025-11-21",
-        statusId: 3, // En Proceso
-        results: "En análisis por el cardiólogo",
-        doctor: "Dra. Patricia Gómez",
-    },
-]
-
 type ViewMode = "cards" | "list"
 
 export const ExamHistoryPage = () => {
     const [viewMode, setViewMode] = useState<ViewMode>("cards")
 
     // Obtener filtros desde URL
-    const { hasActiveFilters, clearFilters } = useUrlFilters();
+    const { filters, hasActiveFilters, clearFilters } = useUrlFilters();
 
     const { data: specialties } = useSpecialtiesOption()
     const specialtyOptions = specialties || []
+
+    const { data: exams, isLoading } = useAllExams();
 
     // Opciones de estado para exámenes
     const examStatusOptions = [
@@ -116,9 +38,50 @@ export const ExamHistoryPage = () => {
         { value: "4", label: "Cancelado" },
     ];
 
-    // El backend filtra los datos según los query params,
-    // por ahora usamos mock data sin filtrar (reemplazar con datos del backend)
-    const filteredExams = mockExamHistory;
+    // Filtrado del lado del cliente
+    const filteredExams = exams?.filter(exam => {
+        // Filtrar por estado
+        if (filters.status && exam.statusId.toString() !== filters.status) {
+            return false;
+        }
+
+        // Filtrar por especialidad
+        if (filters.specialty && filters.specialty !== "all" && exam.specialtyId.toString() !== filters.specialty) {
+            return false;
+        }
+
+        // Filtrar por búsqueda de texto (paciente o tipo de examen)
+        if (filters.search) {
+            const query = filters.search.toLowerCase();
+            return (
+                exam.patientName.toLowerCase().includes(query) ||
+                exam.examTypeName.toLowerCase().includes(query)
+            );
+        }
+
+        // Filtrar por fecha
+        if (filters.dateFrom) {
+            const examDate = new Date(exam.createdAt);
+            const fromDate = new Date(filters.dateFrom);
+            // Reset time part for comparison
+            examDate.setHours(0, 0, 0, 0);
+            fromDate.setHours(0, 0, 0, 0);
+
+            if (examDate < fromDate) return false;
+        }
+
+        if (filters.dateTo) {
+            const examDate = new Date(exam.createdAt);
+            const toDate = new Date(filters.dateTo);
+            // Reset time part for comparison
+            examDate.setHours(0, 0, 0, 0);
+            toDate.setHours(0, 0, 0, 0);
+
+            if (examDate > toDate) return false;
+        }
+
+        return true;
+    }) || [];
 
 
     const getStatusBadge = (statusId: number) => {
@@ -139,6 +102,14 @@ export const ExamHistoryPage = () => {
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
         return date.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-96">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )
     }
 
     return (
@@ -204,52 +175,34 @@ export const ExamHistoryPage = () => {
                                             <div className="flex-1 space-y-3">
                                                 <div>
                                                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                        <h3 className="text-lg font-semibold text-card-foreground">{exam.examType}</h3>
+                                                        <h3 className="text-lg font-semibold text-card-foreground">{exam.examTypeName}</h3>
                                                         {getStatusBadge(exam.statusId)}
                                                     </div>
                                                     <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                                                         <div className="flex items-center gap-1">
                                                             <User className="h-4 w-4" />
-                                                            <span>{exam.patient}</span>
+                                                            <Link to={`/dashboard/patients/history/${exam.patientId}`} className="hover:underline">
+                                                                {exam.patientName}
+                                                            </Link>
                                                         </div>
                                                         <div className="flex items-center gap-1">
                                                             <CalendarIcon className="h-4 w-4" />
-                                                            <span>{formatDate(exam.date)}</span>
+                                                            <span>{formatDate(exam.createdAt)}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground mt-1">
-                                                        <span className="font-medium">Especialidad:</span> {exam.specialty}
+                                                </div>
+
+                                                {exam.results && (
+                                                    <div className="p-3 rounded-lg bg-secondary/30">
+                                                        <p className="text-sm font-medium text-card-foreground mb-1">Resultados:</p>
+                                                        <p className="text-sm text-muted-foreground line-clamp-2">{exam.results}</p>
                                                     </div>
-                                                </div>
-
-                                                <div className="p-3 rounded-lg bg-secondary/30">
-                                                    <p className="text-sm font-medium text-card-foreground mb-1">Resultados:</p>
-                                                    <p className="text-sm text-muted-foreground">{exam.results}</p>
-                                                </div>
-
-                                                <div className="text-sm text-muted-foreground">
-                                                    <span>Solicitado por: {exam.doctor}</span>
-                                                </div>
+                                                )}
                                             </div>
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                className="text-card-foreground border-border bg-transparent"
-                                                title="Ver detalles"
-                                            >
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                className="text-card-foreground border-border bg-transparent"
-                                                title="Descargar"
-                                            >
-                                                <Download className="h-4 w-4" />
-                                            </Button>
+                                            {/* Actions could be added here, e.g. View Details */}
                                         </div>
                                     </div>
                                 </CardContent>
@@ -266,30 +219,25 @@ export const ExamHistoryPage = () => {
                                         <TableRow>
                                             <TableHead>Paciente</TableHead>
                                             <TableHead>Examen</TableHead>
-                                            <TableHead>Especialidad</TableHead>
                                             <TableHead>Fecha</TableHead>
                                             <TableHead>Estado</TableHead>
-                                            <TableHead>Médico</TableHead>
                                             <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredExams.map((exam) => (
                                             <TableRow key={exam.id}>
-                                                <TableCell className="font-medium">{exam.patient}</TableCell>
-                                                <TableCell>{exam.examType}</TableCell>
-                                                <TableCell>{exam.specialty}</TableCell>
-                                                <TableCell>{formatDate(exam.date)}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    <Link to={`/dashboard/patients/history/${exam.patientId}`} className="hover:underline">
+                                                        {exam.patientName}
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell>{exam.examTypeName}</TableCell>
+                                                <TableCell>{formatDate(exam.createdAt)}</TableCell>
                                                 <TableCell>{getStatusBadge(exam.statusId)}</TableCell>
-                                                <TableCell className="text-muted-foreground">{exam.doctor}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
-                                                        <Button variant="ghost" size="icon" title="Ver detalles">
-                                                            <Eye className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" title="Descargar">
-                                                            <Download className="h-4 w-4" />
-                                                        </Button>
+                                                        {/* Actions */}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

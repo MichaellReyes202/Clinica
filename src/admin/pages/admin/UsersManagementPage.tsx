@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Search, Edit, Settings } from "lucide-react"
+import { Search, Edit, Settings, KeyRound, Loader2 } from "lucide-react"
 
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 // Importación del nuevo componente
@@ -13,6 +13,10 @@ import { useUsers } from "@/clinica/hooks/useUsers"
 import { useRoles } from "@/clinica/hooks/useRoles"
 import { useUserMutation } from "@/clinica/hooks/useEmployes"
 import { CreateUserModal } from "@/admin/pages/admin/components/CreateUserModal"
+import { useResetPasswordMutation } from "@/clinica/hooks/useAuthMutations"
+import { ResetPasswordSuccessModal } from "@/admin/pages/admin/components/ResetPasswordSuccessModal"
+import { toast } from "sonner"
+import type { UserCreation } from "@/interfaces/Users.response"
 
 
 export default function UsersManagementPage() {
@@ -23,6 +27,25 @@ export default function UsersManagementPage() {
    const { data: roles, isLoading: isLoadingRoles } = useRoles()
 
    const userMutation = useUserMutation();
+   const resetPasswordMutation = useResetPasswordMutation();
+   const [resetPasswordData, setResetPasswordData] = useState<UserCreation | null>(null);
+   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+   const handleResetPassword = (userId: number, userName: string) => {
+      if (confirm(`¿Estás seguro de que deseas reestablecer la contraseña para el usuario ${userName}?`)) {
+         resetPasswordMutation.mutate(userId, {
+            onSuccess: (data) => {
+               setResetPasswordData(data);
+               setIsSuccessModalOpen(true);
+               toast.success("Contraseña reestablecida correctamente");
+            },
+            onError: () => {
+               toast.error("Error al reestablecer la contraseña");
+            }
+         });
+      }
+   };
+
    const filteredUsers = useMemo(() => {
       if (!users?.userListDto) return [];
       return users.userListDto.filter(
@@ -84,6 +107,12 @@ export default function UsersManagementPage() {
                      availableRoles={roles || []}
                      createMutation={userMutation.createMutation}
                   />
+
+                  <ResetPasswordSuccessModal
+                     isOpen={isSuccessModalOpen}
+                     onClose={() => setIsSuccessModalOpen(false)}
+                     data={resetPasswordData}
+                  />
                </div>
 
                <Table>
@@ -121,6 +150,19 @@ export default function UsersManagementPage() {
                               <div className="flex gap-2">
                                  <Button variant="ghost" size="sm">
                                     <Edit className="h-4 w-4" />
+                                 </Button>
+                                 <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleResetPassword(user.id, user.fullName)}
+                                    disabled={resetPasswordMutation.isPending}
+                                    title="Reestablecer Contraseña"
+                                 >
+                                    {resetPasswordMutation.isPending ? (
+                                       <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                       <KeyRound className="h-4 w-4" />
+                                    )}
                                  </Button>
                               </div>
                            </TableCell>

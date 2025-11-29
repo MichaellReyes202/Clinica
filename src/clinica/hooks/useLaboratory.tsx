@@ -38,3 +38,13 @@ export const useLaboratory = () => {
         isProcessingExam: processExamMutation.isPending
     };
 };
+
+import { useQuery } from "@tanstack/react-query";
+import { getAllExamsAction } from "../actions/Laboratory.action";
+
+export const useAllExams = () => {
+    return useQuery({
+        queryKey: ["all-exams"],
+        queryFn: getAllExamsAction,
+    });
+};

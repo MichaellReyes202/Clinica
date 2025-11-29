@@ -18,6 +18,8 @@ import { OrderExamDialog } from "@/clinica/components/OrderExamDialog";
 import { usePatientHistory } from "@/clinica/hooks/usePatientHistory";
 import { PrescriptionPanel } from "@/clinica/components/PrescriptionPanel";
 import { usePrescriptions } from "@/clinica/hooks/usePrescriptions";
+import { useActiveConsultationData, useDeleteAppointmentMutation } from "@/clinica/hooks/useAppointments";
+import { toast } from "sonner";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,11 @@ export const ActiveConsultationPage = () => {
     const { data: consultation, isLoading: isLoadingDetail } = useConsultationDetail(Number(appointmentId));
     const { finalizeConsultation, isFinalizing, rollbackConsultation, isRollingBack } = useConsultationFlow();
     const { createPrescription } = usePrescriptions(); // Import hook
+
+    // Hook to get appointment details (to check if it's a walk-in)
+    const { data: appointmentDetail } = useActiveConsultationData(appointmentId);
+    // Hook to delete appointment
+    const { mutation: deleteMutation } = useDeleteAppointmentMutation();
 
     // Estado local para navegación segura
     const [showExitDialog, setShowExitDialog] = useState(false);
@@ -107,9 +114,25 @@ export const ActiveConsultationPage = () => {
     const confirmRollback = () => {
         if (!consultation) return;
         rollbackConsultation(consultation.id, {
-            onSuccess: () => {
+            onSuccess: async () => {
+                // Check if it was a walk-in appointment
+                if (appointmentDetail?.reason === "Consulta sin cita previa (Walk-in)") {
+                    try {
+                        // DELETE the appointment entirely
+                        await deleteMutation.mutateAsync(Number(appointmentId));
+                        toast.info("La cita ha sido eliminada.");
+
+                        // Navigate back to Create Consultation Page with patient selected
+                        navigate(`/dashboard/consultations/create?patientId=${consultation.patientId}`);
+                        return;
+                    } catch (error) {
+                        console.error("Error deleting appointment:", error);
+                        // If delete fails, we fall back to default navigation
+                    }
+                }
+
                 setShowExitDialog(false);
-                // El hook useConsultationFlow debería redirigir, si no:
+                // Default behavior for scheduled appointments: Go to Today's Appointments
                 navigate("/dashboard/appointments/today");
             }
         });

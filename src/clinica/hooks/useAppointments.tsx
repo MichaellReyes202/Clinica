@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createAppointmentAction, getAppointmentDetailAction, getAppointments, getDoctorAvailability, getTodayAppointments, updateAppointmentAction, updateAppointmentStatusAction } from "../actions/Appointments.action";
+import { createAppointmentAction, getAppointmentDetailAction, getAppointments, getDoctorAvailability, getTodayAppointments, updateAppointmentAction, updateAppointmentStatusAction, deleteAppointmentAction } from "../actions/Appointments.action";
 import type { AppointmentCreateDto, AppointmentDetailDto, AppointmentResponseDto, AppointmentUpdateDto, DoctorAvailabilityDto, TodayAppointmentDto, UpdateStatusAppointmenDto } from "@/interfaces/Appointment.response";
 import type { SingularError, ValidationResponse } from "@/interfaces/Error.response";
 import { toast } from "sonner";
@@ -218,6 +218,29 @@ export const useUpdateAppointmentStatus = () => {
     return {
         mutation,
         isPosting: mutation.isPending,
+    };
+};
+
+export const useDeleteAppointmentMutation = () => {
+    const queryClient = useQueryClient();
+
+    const mutation = useMutation({
+        mutationFn: (id: number) => deleteAppointmentAction(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["appointments"] });
+            queryClient.invalidateQueries({ queryKey: ["today-appointments"] });
+            queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+            toast.success("Cita eliminada correctamente");
+        },
+        onError: (error) => {
+            console.error("Error eliminando cita:", error);
+            toast.error("Error al eliminar la cita");
+        }
+    });
+
+    return {
+        mutation,
+        isDeleting: mutation.isPending
     };
 };
 

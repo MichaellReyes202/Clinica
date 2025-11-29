@@ -1,3 +1,4 @@
+
 import type { OptionDto } from "./OptionDto.response";
 
 export interface Appointment {
@@ -96,4 +97,5 @@ export interface AppointmentDetailDto {
    doctor: string;
    doctorId: number;
    startTime: string;
+   reason?: string | null;
 }

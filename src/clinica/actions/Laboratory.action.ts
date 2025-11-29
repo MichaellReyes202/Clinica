@@ -23,3 +23,8 @@ export const getExamsByPatientIdAction = async (patientId: number): Promise<Exam
     const { data } = await clinicaApi.get<ExamPendingDto[]>(`/Laboratory/by-patient/${patientId}`);
     return data;
 };
+
+export const getAllExamsAction = async (): Promise<ExamPendingDto[]> => {
+    const { data } = await clinicaApi.get<ExamPendingDto[]>("/Laboratory/all");
+    return data;
+};
