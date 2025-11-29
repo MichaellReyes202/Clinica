@@ -2,7 +2,8 @@ import { createBrowserRouter, Navigate } from "react-router";
 import { AuthLayout } from "./auth/layout/AuthLayout";
 import { ClinicaLayout } from "./clinica/layout/ClinicaLayout";
 import LandingPage from "./clinica/pages/LandingPage";
-import { AdminRoute, NotAuthenticatedRoute } from "./components/routes/ProtectedRoutes";
+import { NotAuthenticatedRoute } from "./components/routes/ProtectedRoutes";
+import { RoleProtectedRoute } from "./components/routes/RoleProtectedRoute";
 import { LoginPage } from "./auth/pages/LoginPage";
 import { AdminLayout } from "./admin/layout/AdminLayout";
 import DashboardPage from "./admin/pages/dashboard/DashboardPage";
@@ -13,6 +14,7 @@ import { TodayAppointmentsPage } from "./admin/pages/appointments/TodayAppointme
 import { ScheduleAppointmentPage } from "./admin/pages/appointments/SchedulePage";
 import { DoctorAvailabilityPage } from "./admin/pages/appointments/DoctorAvailabilityPage";
 import CreateConsultationPage from "./admin/pages/consultations/CreateConsultationPage";
+import ConsultationHistoryPage from "./admin/pages/consultations/ConsultationHistoryPage";
 import { RegisterResultsPage } from "./admin/pages/laboratory/RegisterResultsPage";
 import { ExamHistoryPage } from "./admin/pages/laboratory/ExamHistoryPage";
 import { ManageExamsPage } from "./admin/pages/laboratory/ManageExamsPage";
@@ -24,14 +26,11 @@ import { EmployeesPage } from "./admin/pages/humanResources/EmployeesPage";
 import { AttendancePage } from "./admin/pages/humanResources/AttendancePage";
 import { SpecialtiesPage } from "./admin/pages/humanResources/SpecialtiesPage";
 import { PositionsPage } from "./admin/pages/humanResources/PositionsPage";
-import PatientReportsPage from "./admin/pages/reports/PatientReportsPage";
-import { FinancialReportsPage } from "./admin/pages/reports/FinancialReportsPage";
-import { AttendanceReportsPage } from "./admin/pages/reports/AttendanceReportsPage";
+import { ReportsPage } from "./admin/pages/reports/ReportsPage";
 import UsersManagementPage from "./admin/pages/admin/UsersManagementPage";
 import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
 import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsultationPage";
-
 
 export const appRouter = createBrowserRouter([
     // 1. Rutas Públicas (Landing Page)
@@ -43,8 +42,6 @@ export const appRouter = createBrowserRouter([
                 index: true,
                 element: <LandingPage />
             },
-            // Ejemplo: Ver resultado de examen público por código
-            // { path: 'resultados/:codigo', element: <PublicResultView /> }
         ]
     },
 
@@ -72,9 +69,9 @@ export const appRouter = createBrowserRouter([
     {
         path: '/dashboard',
         element: (
-            <AdminRoute>
+            <RoleProtectedRoute allowedRoles={[1, 2, 3, 4, 5]}>
                 <AdminLayout />
-            </AdminRoute>
+            </RoleProtectedRoute>
         ),
         children: [
             // --- Home del Dashboard ---
@@ -89,26 +86,46 @@ export const appRouter = createBrowserRouter([
                 element: <SearchPatients />
             },
             {
-                path: 'patients/register/new', // Crear
-                element: <RegisterPatients />
+                path: 'patients/register/new', // Crear (Admin y Recepción)
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <RegisterPatients />
+                    </RoleProtectedRoute>
+                )
             },
             {
-                path: 'patients/edit/:id', // Editar (Parametrizado)
-                element: <RegisterPatients />
+                path: 'patients/edit/:id', // Editar (Admin y Recepción)
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <RegisterPatients />
+                    </RoleProtectedRoute>
+                )
             },
             {
-                path: 'patients/:patientId/history', // Historial Clínico Completo
-                element: <PatientHistoryPage />
+                path: 'patients/:patientId/history', // Historial Clínico (Admin, Médico, Enfermero, Bioanalista)
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 3, 4, 5]}>
+                        <PatientHistoryPage />
+                    </RoleProtectedRoute>
+                )
             },
 
             // --- Gestión de Citas ---
             {
-                path: 'appointments/today', // Vista principal del Doctor
-                element: <TodayAppointmentsPage />
+                path: 'appointments/today', // Vista principal del Doctor (Solo Médico)
+                element: (
+                    <RoleProtectedRoute allowedRoles={[3]}>
+                        <TodayAppointmentsPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
-                path: 'appointments/schedule', // Agendar (Secretaria/Doctor)
-                element: <ScheduleAppointmentPage />
+                path: 'appointments/schedule', // Agendar (Admin y Recepción)
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <ScheduleAppointmentPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'appointments/availability',
@@ -118,96 +135,159 @@ export const appRouter = createBrowserRouter([
             // --- Consultas Médicas (Flujo de Trabajo) ---
             {
                 // Esta es la ruta MAESTRA de la consulta.
-                // Aquí unificarás: Notas, Signos Vitales, Recetas y Exámenes en Tabs.
                 path: 'consultations/process/:appointmentId',
-                element: <ActiveConsultationPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[3]}>
+                        <ActiveConsultationPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
-                // Ruta opcional: Para crear una consulta manual si llega un paciente
-                // de emergencia sin cita previa agendada formalmente.
+                // Ruta opcional: Para crear una consulta manual
                 path: 'consultations/create',
-                element: <CreateConsultationPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[3]}>
+                        <CreateConsultationPage />
+                    </RoleProtectedRoute>
+                )
             },
-
-            // NOTA: He eliminado las rutas sueltas de 'consultations/notes', 'prescription', etc.
-            // Porque ahora viven DENTRO de 'ActiveConsultationPage' mediante Tabs.
+            {
+                path: 'consultations/history',
+                element: (
+                    <RoleProtectedRoute allowedRoles={[3]}>
+                        <ConsultationHistoryPage />
+                    </RoleProtectedRoute>
+                )
+            },
 
             // --- Laboratorio ---
             {
                 path: 'laboratory/results',
-                element: <RegisterResultsPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 5]}>
+                        <RegisterResultsPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'laboratory/history',
-                element: <ExamHistoryPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 5]}>
+                        <ExamHistoryPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'laboratory/manage', // Catálogo de exámenes
-                element: <ManageExamsPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 5]}>
+                        <ManageExamsPage />
+                    </RoleProtectedRoute>
+                )
             },
 
             // --- Facturación ---
             {
                 path: 'billing/invoice',
-                element: <GenerateInvoicePage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <GenerateInvoicePage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'billing/payments',
-                element: <RegisterPaymentsPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <RegisterPaymentsPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'billing/close', // Cierre de caja
-                element: <CashClosurePage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <CashClosurePage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'billing/promotions',
-                element: <PromotionsPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 2]}>
+                        <PromotionsPage />
+                    </RoleProtectedRoute>
+                )
             },
 
             // --- Recursos Humanos ---
             {
                 path: 'hr/employees',
-                element: <EmployeesPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <EmployeesPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'hr/attendance',
-                element: <AttendancePage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <AttendancePage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'hr/specialties',
-                element: <SpecialtiesPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <SpecialtiesPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'hr/position',
-                element: <PositionsPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <PositionsPage />
+                    </RoleProtectedRoute>
+                )
             },
 
             // --- Reportes ---
             {
-                path: 'reports/patients',
-                element: <PatientReportsPage />
-            },
-            {
-                path: 'reports/financial',
-                element: <FinancialReportsPage />
-            },
-            {
-                path: 'reports/attendance',
-                element: <AttendanceReportsPage />
+                path: 'reports',
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1, 4]}>
+                        <ReportsPage />
+                    </RoleProtectedRoute>
+                )
             },
 
             // --- Administración ---
             {
                 path: 'admin/users',
-                element: <UsersManagementPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <UsersManagementPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'admin/audit',
-                element: <AuditPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <AuditPage />
+                    </RoleProtectedRoute>
+                )
             },
             {
                 path: 'admin/files',
-                element: <DigitalFilesPage />
+                element: (
+                    <RoleProtectedRoute allowedRoles={[1]}>
+                        <DigitalFilesPage />
+                    </RoleProtectedRoute>
+                )
             }
         ]
     },

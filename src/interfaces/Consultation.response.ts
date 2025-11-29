@@ -24,4 +24,19 @@ export interface ConsultationDetailDto {
     isFinalized: boolean;
     finalizedAt?: string;
     createdAt: string;
+    exams: {
+        id: number;
+        examTypeName: string;
+        status: string;
+    }[];
+    prescriptions: {
+        id: number;
+        items: {
+            medicationName: string;
+            dose: string;
+            frequency: string;
+            duration: string;
+        }[];
+        notes?: string;
+    }[];
 }

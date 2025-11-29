@@ -23,3 +23,15 @@ export const getConsultationsByPatientIdAction = async (patientId: number): Prom
     const { data } = await clinicaApi.get<ConsultationDetailDto[]>(`/Consultation/by-patient/${patientId}`);
     return data;
 };
+
+export const getAllConsultationsAction = async (): Promise<ConsultationDetailDto[]> => {
+    const { data } = await clinicaApi.get<ConsultationDetailDto[]>("/Consultation/all");
+    return data;
+};
+
+export const getConsultationPdfAction = async (id: number): Promise<Blob> => {
+    const response = await clinicaApi.get(`/Consultation/${id}/pdf`, {
+        responseType: 'blob'
+    });
+    return response.data;
+};

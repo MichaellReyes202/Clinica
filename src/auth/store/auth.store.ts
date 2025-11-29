@@ -1,79 +1,88 @@
-import type { User } from "@/interfaces/User.interface";
+import type { User } from "@/interfaces/Users.response";
 import { create } from "zustand";
 import { checkAuthAction, loginAction } from "../actions/login.action";
-import { use } from "react";
+
 
 type AuthStatus = "authenticated" | "not-authenticated" | "checking";
 
 type AuthState = {
-  // Properties
-  user: User | null;
-  token: string | null;
-  authStatus: AuthStatus;
+    // Properties
+    user: User | null;
+    token: string | null;
+    authStatus: AuthStatus;
 
-  // Getters
-  isAdmin: () => boolean;
+    // Getters
+    isAdmin: () => boolean;
+    isDoctor: () => boolean;
+    hasRole: (allowedRoles: number[]) => boolean;
 
-  // Actions
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  checkAuthStatus: () => Promise<boolean>;
+    // Actions
+    login: (email: string, password: string) => Promise<boolean>;
+    logout: () => void;
+    checkAuthStatus: () => Promise<boolean>;
 
-  //register: (email: string, password: string, fullName: string) => Promise<boolean>;
+    //register: (email: string, password: string, fullName: string) => Promise<boolean>;
 };
 
 // implementacion del store
 export const useAuthStore = create<AuthState>()((set, get) => ({
-  user: null,
-  token: null,
-  authStatus: "checking",
+    user: null,
+    token: null,
+    authStatus: "checking",
 
-  // getters
-  isAdmin: () => {
-    const roles = get().user?.roles || [];
-    return roles.includes("Admin");
-  },
-  // action
-  login: async (email: string, password: string) => {
-    try {
-      const data = await loginAction(email, password);
-      localStorage.setItem("token", data.token);
-      set({
-        user: data.user,
-        token: data.token,
-        authStatus: "authenticated",
-      });
-      return true;
-    } catch (error) {
-      localStorage.removeItem("token");
-      set({ user: null, token: null, authStatus: "not-authenticated" });
-      return false;
-    }
-  },
-  logout: () => {
-    localStorage.removeItem("token");
-    set({
-      user: null,
-      token: null,
-      authStatus: "not-authenticated",
-    });
-  },
-  checkAuthStatus: async () => {
-    try {
-      const { user, token } = await checkAuthAction();
-      set({
-        user,
-        token,
-        authStatus: "authenticated",
-      });
-      return true;
-    } catch (error) {
-      set({
-        user: undefined,
-        token: undefined,
-        authStatus: "not-authenticated",
-      });
-      return false;
-    }
-  },
+    // getters
+    isAdmin: () => {
+        return get().user?.roleId === 1;
+    },
+    isDoctor: () => {
+        return get().user?.roleId === 3;
+    },
+    hasRole: (allowedRoles: number[]) => {
+        const roleId = get().user?.roleId;
+        if (!roleId) return false;
+        return allowedRoles.includes(roleId);
+    },
+    // action
+    login: async (email: string, password: string) => {
+        try {
+            const data = await loginAction(email, password);
+            localStorage.setItem("token", data.token);
+            set({
+                user: data.user,
+                token: data.token,
+                authStatus: "authenticated",
+            });
+            return true;
+        } catch (error) {
+            localStorage.removeItem("token");
+            set({ user: null, token: null, authStatus: "not-authenticated" });
+            return false;
+        }
+    },
+    logout: () => {
+        localStorage.removeItem("token");
+        set({
+            user: null,
+            token: null,
+            authStatus: "not-authenticated",
+        });
+    },
+    checkAuthStatus: async () => {
+        try {
+            const { user, token } = await checkAuthAction();
+            set({
+                user,
+                token,
+                authStatus: "authenticated",
+            });
+            return true;
+        } catch (error) {
+            set({
+                user: undefined,
+                token: undefined,
+                authStatus: "not-authenticated",
+            });
+            return false;
+        }
+    },
 }));

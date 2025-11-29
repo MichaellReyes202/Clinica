@@ -1,9 +1,9 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePatientHistory } from "../hooks/usePatientHistory";
-import { Loader2, FileText, FlaskConical, Calendar, User } from "lucide-react";
+import { Loader2, FileText, FlaskConical, User, Pill } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -89,10 +89,23 @@ export const PatientRecord = ({ patientId, patientName, patientAge, patientGende
                                                 </Badge>
                                             </div>
                                             <p className="text-xs font-medium">{exam.examTypeName}</p>
-                                            {/* If we had results here, we could show them, but currently DTO might not have them or we need to check permissions */}
                                         </div>
                                     ))
                                 )}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem value="prescriptions">
+                        <AccordionTrigger className="text-sm font-semibold">
+                            <span className="flex items-center gap-2">
+                                <Pill className="h-4 w-4" />
+                                Historial de Recetas
+                            </span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <div className="space-y-3 pl-2">
+                                <p className="text-xs text-muted-foreground">Funcionalidad de historial de recetas en desarrollo.</p>
                             </div>
                         </AccordionContent>
                     </AccordionItem>

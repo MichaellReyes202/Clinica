@@ -5,7 +5,7 @@ import { Loader2, Save } from "lucide-react";
 import { useLaboratory } from "../hooks/useLaboratory";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ExamPendingDto } from "@/interfaces/Laboratory.response";
+import type { ExamPendingDto } from "@/interfaces/Laboratory.response";
 
 interface ProcessExamDialogProps {
     exam: ExamPendingDto;

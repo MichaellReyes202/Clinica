@@ -2,12 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2, Plus, Search } from "lucide-react";
-import { useExamType } from "../hooks/useExamType"; // Assuming this returns paginated list
+import { useExamTypeSearch } from "../hooks/useExamType";
 import { useLaboratory } from "../hooks/useLaboratory";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { useSearchParams } from "react-router";
 
 interface OrderExamDialogProps {
     appointmentId: number;
@@ -38,25 +36,7 @@ export const OrderExamDialog = ({ appointmentId, consultationId }: OrderExamDial
     const { createOrder, isCreatingOrder } = useLaboratory();
 
     // Custom query for the dialog
-    const { data: examTypesData, isLoading } = useExamType(); // This will use URL params. 
-    // If I want to search inside the modal, I should probably update the URL or refactor the hook.
-    // Updating URL for a modal search is acceptable in some patterns (e.g. ?examQuery=...)
-    // But useExamType uses 'query'.
-
-    // Let's just use the hook and if the user types in the input, we update the URL params?
-    // No, that changes the page state.
-
-    // I'll implement a local search using the action directly.
-
-    /*
-    const { data } = useQuery({
-        queryKey: ['examsType', { query: searchTerm, limit: 50 }],
-        queryFn: () => getExamTypeAction({ query: searchTerm, limit: 50, offset: 0 })
-    });
-    */
-
-    // Since I can't easily import useQuery here without imports, I'll stick to the plan of using what I have.
-    // I'll assume for now we just show the list from the hook.
+    const { data: examTypesData, isLoading } = useExamTypeSearch(searchTerm);
 
     const toggleExam = (id: number) => {
         setSelectedExams(prev =>
@@ -92,16 +72,16 @@ export const OrderExamDialog = ({ appointmentId, consultationId }: OrderExamDial
                 </DialogHeader>
 
                 <div className="py-4 space-y-4">
-                    {/* Search Input - note: this won't work with the current hook unless we update URL */}
-                    {/* <div className="relative">
+                    {/* Search Input */}
+                    <div className="relative">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            placeholder="Buscar examen..." 
-                            className="pl-8" 
+                        <Input
+                            placeholder="Buscar examen..."
+                            className="pl-8"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                    </div> */}
+                    </div>
 
                     <ScrollArea className="h-[300px] border rounded-md p-2">
                         {isLoading ? (

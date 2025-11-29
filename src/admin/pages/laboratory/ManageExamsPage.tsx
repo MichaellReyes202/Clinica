@@ -26,8 +26,10 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Activity, Archive, CheckCircle2 } from "lucide-react"
+import { useAuthStore } from "@/auth/store/auth.store"
 
 export const ManageExamsPage = () => {
+    const user = useAuthStore(state => state.user);
     const [showAddForm, setShowAddForm] = useState(false)
     const [editingId, setEditingId] = useState<number | null>(null);
     const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -138,20 +140,24 @@ export const ManageExamsPage = () => {
                         <p className="text-muted-foreground">Administre el catálogo de exámenes disponibles</p>
                     </div>
                 </div>
-                <Button onClick={() => {
-                    setShowAddForm(!showAddForm);
-                    setEditingId(null);
-                    reset({
-                        name: "",
-                        description: "",
-                        deliveryTime: 24,
-                        pricePaid: 0,
-                        specialtyId: specialties && specialties.length > 0 ? specialties[0].id : undefined as any,
-                    });
-                }} disabled={showAddForm && !editingId} className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nuevo Examen
-                </Button>
+                {
+                    user?.roleId === 1 && (
+                        <Button onClick={() => {
+                            setShowAddForm(!showAddForm);
+                            setEditingId(null);
+                            reset({
+                                name: "",
+                                description: "",
+                                deliveryTime: 24,
+                                pricePaid: 0,
+                                specialtyId: specialties && specialties.length > 0 ? specialties[0].id : undefined as any,
+                            });
+                        }} disabled={showAddForm && !editingId} className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Nuevo Examen
+                        </Button>
+                    )
+                }
             </div>
             <div className="grid gap-4 md:grid-cols-3">
                 <Card className="bg-card border-border">

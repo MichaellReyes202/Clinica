@@ -4,12 +4,11 @@
 
 import { useSearchParams } from "react-router";
 import { createExamTypeAction, examsBySpecialtyAction, getExamTypeAction, getExamTypeDetail, updateExamTypeAction, updateStateExamTypeAction } from "../actions/ExamType.action";
-import type { ExamsBySpecialtyListDto, ExamType, ExamTypeCreateDto } from "@/interfaces/ExamType.response";
-import type { Options, PaginatedResponseDto } from "@/interfaces/Paginated.response";
+import type { ExamsBySpecialtyListDto, ExamType, ExamTypeCreateDto, ExamTypeListDto } from "@/interfaces/ExamType.response";
+import type { PaginatedResponseDto } from "@/interfaces/Paginated.response";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { SingularError, ValidationResponse } from "@/interfaces/Error.response";
-import type { PatientFormValue } from "@/admin/Validation/Patient.Schema";
 import type { AxiosError } from "axios";
 import type { UseFormSetError } from "react-hook-form";
 import type { ExamTypeFormValues } from "@/admin/Validation/ExamTypeSchema";
@@ -21,7 +20,7 @@ export const useExamType = () => {
     const limit = searchParams.get('limit') || 10;
     const page = searchParams.get('page') || 1;
 
-    return useQuery<PaginatedResponseDto<ExamType>>({
+    return useQuery<PaginatedResponseDto<ExamTypeListDto>>({
         queryKey: ['examsType', { page, limit, query }],
         queryFn: () => getExamTypeAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
         staleTime: 1000 * 60 * 60, // 1 hora
@@ -40,6 +39,14 @@ export const useExamsBySpecialty = () => {
         queryFn: () => examsBySpecialtyAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
         staleTime: 1000 * 60 * 60
     })
+}
+
+export const useExamTypeSearch = (query: string) => {
+    return useQuery<PaginatedResponseDto<ExamTypeListDto>>({
+        queryKey: ['examsTypeSearch', query],
+        queryFn: () => getExamTypeAction({ query, limit: 50, offset: 0 }),
+        staleTime: 1000 * 60 * 5 // 5 minutes
+    });
 }
 
 // hook para la busqueda del paciente por el id

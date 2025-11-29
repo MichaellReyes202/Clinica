@@ -1,0 +1,12 @@
+src/admin/components/dashboard/ManagerDashboard.tsx(2,1): error TS6133: 'Badge' is declared but its value is never read.
+src/admin/components/dashboard/ManagerDashboard.tsx(3,10): error TS6133: 'TrendingUp' is declared but its value is never read.
+src/admin/components/Header.tsx(10,10): error TS6133: 'Bell' is declared but its value is never read.
+src/admin/pages/appointments/components/AppointmentForm.tsx(62,67): error TS6133: 'reset' is declared but its value is never read.
+src/admin/pages/consultations/ActiveConsultationPage.tsx(46,45): error TS6133: 'isCreatingPrescription' is declared but its value is never read.
+src/admin/pages/consultations/ActiveConsultationPage.tsx(400,33): error TS6133: 'currentAppointmentId' is declared but its value is never read.
+src/admin/pages/laboratory/ExamHistoryPage.tsx(106,12): error TS6133: 'filters' is declared but its value is never read.
+src/admin/pages/pharmacy/PharmacyInventoryPage.tsx(32,21): error TS6133: 'setMedicines' is declared but its value is never read.
+src/admin/pages/reports/ReportsPage.tsx(11,23): error TS2307: Cannot find module '@/api/clinic.api' or its corresponding type declarations.
+src/auth/interfaces/auth.response.ts(1,27): error TS2307: Cannot find module '@/interfaces/User.interface' or its corresponding type declarations.
+src/auth/store/auth.store.ts(4,1): error TS6133: 'use' is declared but its value is never read.
+src/clinica/actions/Specialties.action.ts(2,37): error TS6196: 'DoctorBySpecialtyListDto' is declared but never used.

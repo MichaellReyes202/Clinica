@@ -1,12 +1,12 @@
 import { clinicaApi } from "@/api/clinicaApi";
-import type { ExamsBySpecialtyListDto, ExamType, ExamTypeCreateDto } from "@/interfaces/ExamType.response";
+import type { ExamsBySpecialtyListDto, ExamType, ExamTypeCreateDto, ExamTypeListDto } from "@/interfaces/ExamType.response";
 import type { Options, PaginatedResponseDto } from "@/interfaces/Paginated.response";
 import { isAxiosError } from "axios";
 
-export const getExamTypeAction = async (options: Options = {}): Promise<PaginatedResponseDto<ExamType>> => {
+export const getExamTypeAction = async (options: Options = {}): Promise<PaginatedResponseDto<ExamTypeListDto>> => {
     try {
         const { limit, offset, query } = options;
-        const { data } = await clinicaApi.get<PaginatedResponseDto<ExamType>>("/examType", {
+        const { data } = await clinicaApi.get<PaginatedResponseDto<ExamTypeListDto>>("/examType", {
             params: { limit, offset, query },
         });
         return {

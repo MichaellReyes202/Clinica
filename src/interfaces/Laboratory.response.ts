@@ -17,5 +17,6 @@ export interface ExamPendingDto {
     patientName: string;
     statusId: number;
     statusName: string;
+    results?: string;
     createdAt: string;
 }

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createExamOrderAction, processExamAction } from "../actions/Laboratory.action";
-import { ExamOrderDto, ExamProcessDto } from "@/interfaces/Laboratory.response";
+import type { ExamOrderDto, ExamProcessDto } from "@/interfaces/Laboratory.response";
 import { toast } from "sonner";
 
 export const useLaboratory = () => {

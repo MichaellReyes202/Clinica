@@ -1,82 +1,33 @@
 
 
-import { useEffect, useState } from "react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { useAuthStore } from "@/auth/store/auth.store"
 import { DoctorDashboard } from "@/admin/components/dashboard/DoctorDashboard"
 import { ReceptionistDashboard } from "@/admin/components/dashboard/ReceptionistDashboard"
 import { ManagerDashboard } from "@/admin/components/dashboard/ManagerDashboard"
+import { Navigate } from "react-router"
 
 export default function DashboardPage() {
-  const [userRole, setUserRole] = useState<string>("doctor")
+    const user = useAuthStore(state => state.user);
 
-  useEffect(() => {
-    // Get user role from localStorage
-    const role = localStorage.getItem("userRole") || "doctor"
-    setUserRole(role)
-  }, [])
+    if (!user) {
+        return <Navigate to="/auth/login" />
+    }
 
-  const handleRoleChange = (role: string) => {
-    localStorage.setItem("userRole", role)
-    setUserRole(role)
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Role Selector for Demo */}
-      <Card className="bg-card border-border">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4 flex-wrap">
-            <p className="text-sm text-muted-foreground">Vista de demostración:</p>
-            <div className="flex gap-2">
-              <Button
-                variant={userRole === "doctor" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleRoleChange("doctor")}
-                className={
-                  userRole === "doctor"
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-card-foreground border-border"
-                }
-              >
-                Doctor
-              </Button>
-              <Button
-                variant={userRole === "receptionist" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleRoleChange("receptionist")}
-                className={
-                  userRole === "receptionist"
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-card-foreground border-border"
-                }
-              >
-                Recepcionista
-              </Button>
-              <Button
-                variant={userRole === "manager" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleRoleChange("manager")}
-                className={
-                  userRole === "manager"
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-card-foreground border-border"
-                }
-              >
-                Gerente
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Role-based Dashboard */}
-      {userRole === "doctor" && <DoctorDashboard />}
-      {userRole === "receptionist" && <ReceptionistDashboard />}
-      {userRole === "manager" && <ManagerDashboard />}
-    </div>
-  )
+    return (
+        <div className="space-y-6">
+            {/* Role-based Dashboard */}
+            {user.roleId === 3 && <DoctorDashboard />}
+            {user.roleId === 2 && <ReceptionistDashboard />}
+            {user.roleId === 1 && <ManagerDashboard />}
+            {/* Fallback for other roles or if no specific dashboard exists */}
+            {![1, 2, 3].includes(user.roleId) && (
+                <div className="p-4">
+                    <h2 className="text-2xl font-bold">Bienvenido, {user.fullName}</h2>
+                    <p className="text-muted-foreground">Seleccione una opción del menú para comenzar.</p>
+                </div>
+            )}
+        </div>
+    )
 }
 
 
