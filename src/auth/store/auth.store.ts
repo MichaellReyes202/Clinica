@@ -26,6 +26,7 @@ type AuthState = {
 
   setBlocked: (lockoutEnd: Date) => void;
   clearBlocked: () => void;
+  setRequiresPasswordChange: (value: boolean) => void;
 
   checkAuthStatus: () => Promise<boolean>;
 
@@ -84,6 +85,13 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       isBlocked: false,
       lockoutEnd: null,
     });
+  },
+
+  setRequiresPasswordChange: (value: boolean) => {
+    const { user } = get();
+    if (user) {
+      set({ user: { ...user, requiresPasswordChange: value } });
+    }
   },
 
   getTimeLeft: () => {

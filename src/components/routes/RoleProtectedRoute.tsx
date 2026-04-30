@@ -26,6 +26,11 @@ export const RoleProtectedRoute = ({ allowedRoles, children }: Props) => {
     return <Navigate to="/auth/login" />;
   }
 
+  const user = useAuthStore(state => state.user);
+  if (user?.requiresPasswordChange) {
+    return <Navigate to="/auth/change-password" replace />;
+  }
+
   if (!hasRole(allowedRoles)) {
     // Si está autenticado pero no tiene rol, redirigir a dashboard (si tiene acceso básico) o mostrar 403.
     // Como /dashboard es acceso global, redirigimos ahí si intenta entrar a algo restringido.

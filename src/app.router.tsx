@@ -31,6 +31,7 @@ import UsersManagementPage from "./admin/pages/admin/UsersManagementPage";
 import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
 import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsultationPage";
+import { ForceChangePasswordPage } from "./auth/pages/ForceChangePasswordPage";
 
 export const appRouter = createBrowserRouter([
   // 1. Rutas Públicas (Landing Page)
@@ -63,6 +64,12 @@ export const appRouter = createBrowserRouter([
         element: <LoginPage />
       }
     ]
+  },
+
+  // 2.5 Ruta para forzar cambio de contraseña
+  {
+    path: '/auth/change-password',
+    element: <ForceChangePasswordPage />
   },
 
   // 3. Rutas Privadas (Dashboard / Admin)
