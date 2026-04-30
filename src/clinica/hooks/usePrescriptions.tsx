@@ -4,48 +4,48 @@ import { createPrescriptionAction, getPrescriptionByConsultationIdAction, getPre
 import { toast } from "sonner";
 
 export const usePrescriptions = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    // Mutation to create prescription
-    const createPrescriptionMutation = useMutation({
-        mutationFn: createPrescriptionAction,
-        onSuccess: () => {
-            toast.success("Receta guardada correctamente");
-            queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
-        },
-        onError: (error) => {
-            console.error(error);
-            toast.error("Error al guardar la receta");
-        }
-    });
+  // Mutation to create prescription
+  const createPrescriptionMutation = useMutation({
+    mutationFn: createPrescriptionAction,
+    onSuccess: () => {
+      toast.success("Receta guardada correctamente");
+      queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Error al guardar la receta");
+    }
+  });
 
-    return {
-        createPrescription: createPrescriptionMutation.mutateAsync,
-        isCreating: createPrescriptionMutation.isPending
-    };
+  return {
+    createPrescription: createPrescriptionMutation.mutateAsync,
+    isCreating: createPrescriptionMutation.isPending
+  };
 };
 
 export const useMedicationSearch = (query: string) => {
-    return useQuery({
-        queryKey: ["medications", query],
-        queryFn: () => searchMedicationsAction(query),
-        enabled: query.length > 2, // Only search if query has more than 2 chars
-        staleTime: 1000 * 60 * 5 // Cache for 5 mins
-    });
+  return useQuery({
+    queryKey: ["medications", query],
+    queryFn: () => searchMedicationsAction(query),
+    enabled: query.length > 2, // Only search if query has more than 2 chars
+    staleTime: 1000 * 60 * 5 // Cache for 5 mins
+  });
 };
 
 export const useConsultationPrescription = (consultationId: number) => {
-    return useQuery({
-        queryKey: ["prescription", consultationId],
-        queryFn: () => getPrescriptionByConsultationIdAction(consultationId),
-        enabled: !!consultationId
-    });
+  return useQuery({
+    queryKey: ["prescription", consultationId],
+    queryFn: () => getPrescriptionByConsultationIdAction(consultationId),
+    enabled: !!consultationId
+  });
 };
 
 export const usePatientPrescriptions = (patientId: number) => {
-    return useQuery({
-        queryKey: ["patient-prescriptions", patientId],
-        queryFn: () => getPrescriptionsByPatientIdAction(patientId),
-        enabled: !!patientId
-    });
+  return useQuery({
+    queryKey: ["patient-prescriptions", patientId],
+    queryFn: () => getPrescriptionsByPatientIdAction(patientId),
+    enabled: !!patientId
+  });
 };

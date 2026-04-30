@@ -9,12 +9,14 @@ export const RegisterPatients = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const isNew = !id;
+
   const { data: patientDetail, isLoading: isLoadingPatientDetail } = usePatientDetail(id || 'new');
   const { data: sexoOptions, isLoading: isLoadingSexo } = useGenderOption();
   const { data: bloodTypeOptions, isLoading: isLoadingBloodType } = useBloodTypeOption();
 
-  const Title = id === 'new' ? 'Nuevo Paciente' : 'Editar Paciente';
-  const Subtitle = id === 'new' ? 'Ingrese los datos del nuevo paciente' : 'Modifique los datos del paciente';
+  const Title = isNew ? 'Nuevo Paciente' : 'Editar Paciente';
+  const Subtitle = isNew ? 'Ingrese los datos del nuevo paciente' : 'Modifique los datos del paciente';
 
 
   if (isLoadingSexo || isLoadingBloodType || isLoadingPatientDetail) {

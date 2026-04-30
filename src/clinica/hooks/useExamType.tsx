@@ -12,166 +12,117 @@ import type { SingularError, ValidationResponse } from "@/interfaces/Error.respo
 import type { AxiosError } from "axios";
 import type { UseFormSetError } from "react-hook-form";
 import type { ExamTypeFormValues } from "@/admin/Validation/ExamTypeSchema";
+import { handleMutationError } from "@/utils/handleMutationError";
 
 export const useExamType = () => {
-    const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-    const query = searchParams.get('query') || undefined;
-    const limit = searchParams.get('limit') || 10;
-    const page = searchParams.get('page') || 1;
+  const query = searchParams.get('query') || undefined;
+  const limit = searchParams.get('limit') || 10;
+  const page = searchParams.get('page') || 1;
 
-    return useQuery<PaginatedResponseDto<ExamTypeListDto>>({
-        queryKey: ['examsType', { page, limit, query }],
-        queryFn: () => getExamTypeAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-        staleTime: 1000 * 60 * 60, // 1 hora
-    })
+  return useQuery<PaginatedResponseDto<ExamTypeListDto>>({
+    queryKey: ['examsType', { page, limit, query }],
+    queryFn: () => getExamTypeAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+    staleTime: 1000 * 60 * 60, // 1 hora
+  })
 }
 
 export const useExamsBySpecialty = () => {
-    const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-    const query = searchParams.get('query') || undefined;
-    const limit = searchParams.get('limit') || 10;
-    const page = searchParams.get('page') || 1;
+  const query = searchParams.get('query') || undefined;
+  const limit = searchParams.get('limit') || 10;
+  const page = searchParams.get('page') || 1;
 
-    return useQuery<PaginatedResponseDto<ExamsBySpecialtyListDto>>({
-        queryKey: ['examsTypeBySpecialty', { page, limit, query }],
-        queryFn: () => examsBySpecialtyAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
-        staleTime: 1000 * 60 * 60
-    })
+  return useQuery<PaginatedResponseDto<ExamsBySpecialtyListDto>>({
+    queryKey: ['examsTypeBySpecialty', { page, limit, query }],
+    queryFn: () => examsBySpecialtyAction({ query, limit, offset: (Number(page) - 1) * Number(limit) }),
+    staleTime: 1000 * 60 * 60
+  })
 }
 
 export const useExamTypeSearch = (query: string) => {
-    return useQuery<PaginatedResponseDto<ExamTypeListDto>>({
-        queryKey: ['examsTypeSearch', query],
-        queryFn: () => getExamTypeAction({ query, limit: 50, offset: 0 }),
-        staleTime: 1000 * 60 * 5 // 5 minutes
-    });
+  return useQuery<PaginatedResponseDto<ExamTypeListDto>>({
+    queryKey: ['examsTypeSearch', query],
+    queryFn: () => getExamTypeAction({ query, limit: 50, offset: 0 }),
+    staleTime: 1000 * 60 * 5 // 5 minutes
+  });
 }
 
 // hook para la busqueda del paciente por el id
 export const useExamTypeDetail = (examTypeId: string | null) => {
-    const query = useQuery<ExamType, Error>({
-        queryKey: ["examsTypeDetail"],
-        queryFn: () => getExamTypeDetail(examTypeId!),
-        enabled: examTypeId !== null,
-        staleTime: 0,
-        refetchOnWindowFocus: false,
-    });
-    return {
-        ...query,
-        patient: query.data ?? null,
-    };
+  const query = useQuery<ExamType, Error>({
+    queryKey: ["examsTypeDetail"],
+    queryFn: () => getExamTypeDetail(examTypeId!),
+    enabled: examTypeId !== null,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+  return {
+    ...query,
+    patient: query.data ?? null,
+  };
 };
 
 
 export const useExamTypeMutation = (onSuccessAction?: () => void, setError?: UseFormSetError<ExamTypeFormValues>) => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    const handleMutationError = (error: unknown) => {
-        const axiosError = error as AxiosError;
-        if (!axiosError?.response) {
-            console.error("Error no manejado:", error);
-            toast.error("Error desconocido en el servidor");
-            return;
-        }
-        const { status, data } = axiosError.response;
 
-        if (status === 409) {
-            const serverError = data as SingularError;
-            if (setError && serverError.field) {
-                setError(serverError.field as keyof ExamTypeFormValues, {
-                    type: serverError.code,
-                    message: serverError.description
-                });
-            } else {
-                toast(`Error 409 sin campo: ", ${serverError.description}`)
-                console.error("Error 409 sin campo: ", serverError.description);
-            }
-            return;
-        }
-        if (status === 400) {
-            const validationResponse = data as ValidationResponse;
-            if (setError && validationResponse.errors?.length) {
-                validationResponse.errors.forEach(err => {
-                    // Mapear nombres de campo de PascalCase (servidor) a camelCase (formulario)
-                    const fieldMapping: Record<string, keyof ExamTypeFormValues> = {
-                        'Name': 'name',
-                        'Description': 'description',
-                        'DeliveryTime': 'deliveryTime',
-                        'PricePaid': 'pricePaid',
-                        'SpecialtyId': 'specialtyId',
-                    };
+  const createMutation = useMutation({
+    mutationFn: (info: ExamTypeCreateDto) => createExamTypeAction(info),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["examsType"] });
+      queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      onSuccessAction?.();
+      toast.success("Examen creado correctamente", {
+        position: "bottom-right"
+      });
+    },
+    onError: (error) => handleMutationError(error, setError, function (value: string) {
+      toast.message(value, { duration: 5000 });
+    }),
+  });
 
-                    const fieldName = fieldMapping[err.propertyName] || err.propertyName.toLowerCase() as keyof ExamTypeFormValues;
+  const updateMutation = useMutation({
+    mutationFn: (info: Partial<ExamType>) => updateExamTypeAction(info.id!, info),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["examsType"] });
+      queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
+      queryClient.invalidateQueries({ queryKey: ["examsTypeDetail"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      onSuccessAction?.();
+      toast.success("Examen actualizado correctamente", {
+        position: "bottom-right"
+      });
+    },
+    onError: (error) => handleMutationError(error, setError, function (value: string) {
+      toast.message(value, { duration: 6000 });
+    }),
+  });
 
-                    setError(fieldName, {
-                        type: "validation",
-                        message: err.errorMessage
-                    });
-                });
-            } else {
-                console.error("Error 400 genérico:", validationResponse.message);
-            }
-            return;
-        }
-        if (status === 404) {
-            console.error("Recurso no encontrado (404):", (data as SingularError).description);
-            return;
-        }
+  const updateStateMutation = useMutation({
+    mutationFn: (id: number) => updateStateExamTypeAction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["examsType"] });
+      queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
+      queryClient.invalidateQueries({ queryKey: ["examsTypeDetail"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      toast.success("Estado del examen actualizado correctamente", {
+        position: "bottom-right"
+      });
+    },
+    onError: (error) => handleMutationError(error, setError, function (value: string) {
+      toast.message(value, { duration: 6000 });
+    }),
+  });
 
-        // Manejo de 500 o fallbacks
-        console.error(`Error del servidor ${status}:`, data);
-
-    };
-
-    const createMutation = useMutation({
-        mutationFn: (info: ExamTypeCreateDto) => createExamTypeAction(info),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["examsType"] });
-            queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
-            queryClient.invalidateQueries({ queryKey: ["audit-log"] });
-            onSuccessAction?.();
-            toast.success("Examen creado correctamente", {
-                position: "bottom-right"
-            });
-        },
-        onError: handleMutationError,
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (info: Partial<ExamType>) => updateExamTypeAction(info.id!, info),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["examsType"] });
-            queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
-            queryClient.invalidateQueries({ queryKey: ["examsTypeDetail"] });
-            queryClient.invalidateQueries({ queryKey: ["audit-log"] });
-            onSuccessAction?.();
-            toast.success("Examen actualizado correctamente", {
-                position: "bottom-right"
-            });
-        },
-        onError: handleMutationError,
-    });
-
-    const updateStateMutation = useMutation({
-        mutationFn: (id: number) => updateStateExamTypeAction(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["examsType"] });
-            queryClient.invalidateQueries({ queryKey: ["examsTypeBySpecialty"] });
-            queryClient.invalidateQueries({ queryKey: ["examsTypeDetail"] });
-            queryClient.invalidateQueries({ queryKey: ["audit-log"] });
-            toast.success("Estado del examen actualizado correctamente", {
-                position: "bottom-right"
-            });
-        },
-        onError: handleMutationError,
-    });
-
-    return {
-        createMutation,
-        updateMutation,
-        updateStateMutation,
-        isPosting: createMutation.isPending || updateMutation.isPending || updateStateMutation.isPending,
-    };
+  return {
+    createMutation,
+    updateMutation,
+    updateStateMutation,
+    isPosting: createMutation.isPending || updateMutation.isPending || updateStateMutation.isPending,
+  };
 };

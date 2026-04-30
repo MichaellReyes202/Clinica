@@ -4,47 +4,47 @@ import type { ExamOrderDto, ExamProcessDto } from "@/interfaces/Laboratory.respo
 import { toast } from "sonner";
 
 export const useLaboratory = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    const createOrderMutation = useMutation({
-        mutationFn: (dto: ExamOrderDto) => createExamOrderAction(dto),
-        onSuccess: () => {
-            toast.success("Orden de exámenes creada correctamente");
-            queryClient.invalidateQueries({ queryKey: ["patient-exams"] });
-            queryClient.invalidateQueries({ queryKey: ["exams-by-appointment"] });
-        },
-        onError: (error) => {
-            console.error("Error creating exam order:", error);
-            toast.error("Error al crear la orden de exámenes");
-        }
-    });
+  const createOrderMutation = useMutation({
+    mutationFn: (dto: ExamOrderDto) => createExamOrderAction(dto),
+    onSuccess: () => {
+      toast.success("Orden de exámenes creada correctamente");
+      queryClient.invalidateQueries({ queryKey: ["patient-exams"] });
+      queryClient.invalidateQueries({ queryKey: ["exams-by-appointment"] });
+    },
+    onError: (error) => {
+      console.error("Error creating exam order:", error);
+      toast.error("Error al crear la orden de exámenes");
+    }
+  });
 
-    const processExamMutation = useMutation({
-        mutationFn: (dto: ExamProcessDto) => processExamAction(dto),
-        onSuccess: () => {
-            toast.success("Examen procesado correctamente");
-            queryClient.invalidateQueries({ queryKey: ["pending-exams"] });
-        },
-        onError: (error) => {
-            console.error("Error processing exam:", error);
-            toast.error("Error al procesar el examen");
-        }
-    });
+  const processExamMutation = useMutation({
+    mutationFn: (dto: ExamProcessDto) => processExamAction(dto),
+    onSuccess: () => {
+      toast.success("Examen procesado correctamente");
+      queryClient.invalidateQueries({ queryKey: ["pending-exams"] });
+    },
+    onError: (error) => {
+      console.error("Error processing exam:", error);
+      toast.error("Error al procesar el examen");
+    }
+  });
 
-    return {
-        createOrder: createOrderMutation.mutate,
-        isCreatingOrder: createOrderMutation.isPending,
-        processExam: processExamMutation.mutate,
-        isProcessingExam: processExamMutation.isPending
-    };
+  return {
+    createOrder: createOrderMutation.mutate,
+    isCreatingOrder: createOrderMutation.isPending,
+    processExam: processExamMutation.mutate,
+    isProcessingExam: processExamMutation.isPending
+  };
 };
 
 import { useQuery } from "@tanstack/react-query";
 import { getAllExamsAction } from "../actions/Laboratory.action";
 
 export const useAllExams = () => {
-    return useQuery({
-        queryKey: ["all-exams"],
-        queryFn: getAllExamsAction,
-    });
+  return useQuery({
+    queryKey: ["all-exams"],
+    queryFn: getAllExamsAction,
+  });
 };

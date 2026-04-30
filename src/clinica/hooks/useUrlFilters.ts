@@ -24,7 +24,7 @@ export const useUrlFilters = () => {
       dateFrom: searchParams.get("dateFrom") || undefined,
       dateTo: searchParams.get("dateTo") || undefined,
     }),
-    [searchParams]
+    [searchParams],
   );
 
   // Actualizar un filtro individual
@@ -45,7 +45,7 @@ export const useUrlFilters = () => {
 
       setSearchParams(newParams);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Actualizar múltiples filtros a la vez
@@ -66,7 +66,7 @@ export const useUrlFilters = () => {
 
       setSearchParams(newParams);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Limpiar todos los filtros

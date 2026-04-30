@@ -6,98 +6,41 @@ import { createEmployeeAction, updateEmployeeAction } from "../actions/Employee.
 import { toast } from "sonner";
 import type { UseFormSetError } from "react-hook-form";
 import type { EmployeeFormValues } from "@/admin/Validation/EmployeeSchema";
+import { handleMutationError } from "@/utils/handleMutationError";
 
 export const useEmployeeMutation = (onSuccessAction?: () => void, setError?: UseFormSetError<EmployeeFormValues>) => {
-   const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-   const handleMutationError = (error: unknown) => {
-      const axiosError = error as AxiosError;
-      if (!axiosError?.response) {
-         console.error("Error no manejado:", error);
-         toast.error("Error desconocido en el servidor");
-         return;
-      }
-      const { status, data } = axiosError.response;
 
-      // ----------------------------------------------------
-      // A. Manejo de Errores 409 Conflict (Errores de Negocio con Campo)
-      // ----------------------------------------------------
+  const createMutation = useMutation({
+    mutationFn: (info: EmployeeCreationDto) => createEmployeeAction(info),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      onSuccessAction?.();
+      toast.success("Empleado creado correctamente");
+    },
+    onError: (error) => handleMutationError(error, setError, function (value: string) {
+      toast.message(value, { duration: 3000 });
+    }),
+  });
 
-      if (status === 409) {
-         const serverError = data as SingularError;
-         if (setError && serverError.field) {
-            // Inyectamos el error en el campo específico del formulario
-            setError(serverError.field as keyof EmployeeFormValues, {
-               type: serverError.code,
-               message: serverError.description
-            });
-         } else {
-            toast(`Error 409 sin campo: ", ${serverError.description}`)
-            console.error("Error 409 sin campo: ", serverError.description);
-         }
-         return;
-      }
+  const updateMutation = useMutation({
+    mutationFn: (info: EmployeeUpdateDto) => updateEmployeeAction(info.id, info),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
+      onSuccessAction?.();
+      toast.success("Empleado actualizado correctamente");
+    },
+    onError: (error) => handleMutationError(error, setError, function (value: string) {
+      toast.message(value, { duration: 3000 });
+    }),
+  });
 
-      // ----------------------------------------------------
-      // B. Manejo de Errores 400 Bad Request (Validación Múltiple)
-      // ----------------------------------------------------
-      if (status === 400) {
-         const validationResponse = data as ValidationResponse;
-         if (setError && validationResponse.errors?.length) {
-            validationResponse.errors.forEach(err => {
-               // Inyectamos el error en cada campo afectado
-               setError(err.propertyName as keyof EmployeeFormValues, {
-                  type: "validation",
-                  message: err.errorMessage
-               });
-            });
-         } else {
-            // Manejar 400 sin lista de errores (ej: si el backend devuelve un 400 singular)
-            console.error("Error 400 genérico:", validationResponse.message);
-            toast.error(`Error: ${validationResponse.message}`);
-         }
-         return;
-      }
-
-      // ----------------------------------------------------
-      // C. Manejo de Errores Globales (404, 500, etc.)
-      // ----------------------------------------------------
-      if (status === 404) {
-         console.error("Recurso no encontrado (404):", (data as SingularError).description);
-         toast.error((data as SingularError).description);
-         return;
-      }
-
-      // Manejo de 500 o fallbacks
-      console.error(`Error del servidor ${status}:`, data);
-      toast.error("Error interno del servidor");
-   };
-
-   const createMutation = useMutation({
-      mutationFn: (info: EmployeeCreationDto) => createEmployeeAction(info),
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: ["employees"] });
-         queryClient.invalidateQueries({ queryKey: ["audit-log"] });
-         onSuccessAction?.();
-         toast.success("Empleado creado correctamente");
-      },
-      onError: handleMutationError,
-   });
-
-   const updateMutation = useMutation({
-      mutationFn: (info: EmployeeUpdateDto) => updateEmployeeAction(info.id, info),
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: ["employees"] });
-         queryClient.invalidateQueries({ queryKey: ["audit-log"] });
-         onSuccessAction?.();
-         toast.success("Empleado actualizado correctamente");
-      },
-      onError: handleMutationError,
-   });
-
-   return {
-      createMutation,
-      updateMutation,
-      isPosting: createMutation.isPending || updateMutation.isPending,
-   };
+  return {
+    createMutation,
+    updateMutation,
+    isPosting: createMutation.isPending || updateMutation.isPending,
+  };
 };

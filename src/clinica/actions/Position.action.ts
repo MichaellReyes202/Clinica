@@ -26,17 +26,10 @@ export const getPositionsAction = async (options: Options = {}): Promise<Paginat
 // funcion para obtener el detalle de la posicion segun el id
 
 export const getPositionDetail = async (positionId: number): Promise<PositionUpdate> => {
-  try {
-    const { data } = await clinicaApi.get<PositionUpdate>(`/position/${positionId}`);
-    return {
-      ...data,
-    };
-  } catch (error) {
-    if (isAxiosError(error)) {
-      throw new Error(error.response?.data);
-    }
-    throw error;
-  }
+  const { data } = await clinicaApi.get<PositionUpdate>(`/position/${positionId}`);
+  return {
+    ...data,
+  };
 };
 
 // crear un nuevo cargo

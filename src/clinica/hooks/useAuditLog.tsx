@@ -4,10 +4,10 @@ import type { AuditLogListDto, AuditLogQuery } from "@/interfaces/AuditLog.respo
 import type { PaginatedResponseDto } from "@/interfaces/Paginated.response";
 
 export const useAuditLog = (params: AuditLogQuery) => {
-   const query = useQuery<PaginatedResponseDto<AuditLogListDto>>({
-      queryKey: ["audit-log", params],
-      queryFn: () => getAuditLog(params),
-   });
+  const query = useQuery<PaginatedResponseDto<AuditLogListDto>>({
+    queryKey: ["audit-log", params],
+    queryFn: () => getAuditLog(params),
+  });
 
-   return query;
+  return query;
 };

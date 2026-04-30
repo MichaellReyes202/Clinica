@@ -3,29 +3,19 @@ import type { AuthResponse } from "../interfaces/auth.response";
 import type { UserCreation } from "@/interfaces/Users.response";
 
 export const loginAction = async (email: string, password: string): Promise<AuthResponse> => {
-  try {
-    const { data } = await clinicaApi.post<AuthResponse>("/auth/login", {
-      email,
-      password,
-    });
-    return data;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+  const { data } = await clinicaApi.post<AuthResponse>("/auth/login", {
+    email,
+    password,
+  });
+  return data;
 };
 export const registerAction = async (email: string, password: string, fullName: string) => {
-  try {
-    const { data } = await clinicaApi.post<AuthResponse>("/auth/register", {
-      email,
-      password,
-      fullName,
-    });
-    return data;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+  const { data } = await clinicaApi.post<AuthResponse>("/auth/register", {
+    email,
+    password,
+    fullName,
+  });
+  return data;
 };
 
 export const checkAuthAction = async (): Promise<AuthResponse> => {
@@ -43,11 +33,6 @@ export const checkAuthAction = async (): Promise<AuthResponse> => {
 };
 
 export const resetPasswordAction = async (id: number): Promise<UserCreation> => {
-  try {
-    const { data } = await clinicaApi.post<UserCreation>(`/auth/reset-password/${id}`);
-    return data;
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
+  const { data } = await clinicaApi.post<UserCreation>(`/auth/reset-password/${id}`);
+  return data;
 };
