@@ -30,10 +30,36 @@ export const getFilteredEmployees = async (options: Options = {}): Promise<Emplo
   };
 };
 
-export const createEmployeeAction = async (employee: Partial<Employee>): Promise<void> => {
-  await clinicaApi.post("/employees/createEmployes", employee);
+export const createEmployeeAction = async (employee: Partial<Employee> & { photo?: File | null }): Promise<void> => {
+  const formData = new FormData();
+  Object.entries(employee).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === 'photo') {
+        formData.append(key, value as File);
+      } else {
+        formData.append(key, value.toString());
+      }
+    }
+  });
+  
+  await clinicaApi.post("/employees/createEmployes", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 };
 
-export const updateEmployeeAction = async (id: number, employee: Partial<Employee>) => {
-  await clinicaApi.put(`/employees/${id}`, employee);
+export const updateEmployeeAction = async (id: number, employee: Partial<Employee> & { photo?: File | null }) => {
+  const formData = new FormData();
+  Object.entries(employee).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === 'photo') {
+        formData.append(key, value as File);
+      } else {
+        formData.append(key, value.toString());
+      }
+    }
+  });
+
+  await clinicaApi.put(`/employees/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 };

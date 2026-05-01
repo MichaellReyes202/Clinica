@@ -64,6 +64,7 @@ export const EmployeeSchema = z.object({
     .optional(),
   // Nuevo campo requerido por EmployesUpdateDto
   isActive: z.boolean().optional(),
+  photo: z.any().optional(),
 });
 
 

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useSearchParams } from "react-router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,7 +18,8 @@ import { usePositionOption } from "@/clinica/hooks/usePosition"
 
 export const EmployeesPage = () => {
    const queryClient = useQueryClient();
-   const [searchTerm, setSearchTerm] = useState("")
+   const [searchParams, setSearchParams] = useSearchParams();
+   const searchTerm = searchParams.get("query") || "";
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [employeeIdToEdit, setEmployeeIdToEdit] = useState<number | null>(null);
 
@@ -45,18 +47,22 @@ export const EmployeesPage = () => {
       queryClient.resetQueries({ queryKey: ["employeeDetail"] });
    };
 
+   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const term = e.target.value;
+      if (term) {
+         searchParams.set("query", term);
+         searchParams.set("page", "1"); // Resetear a la primera página
+      } else {
+         searchParams.delete("query");
+      }
+      setSearchParams(searchParams);
+   };
+
    if (isLoadingEmployees || isLoadingPositions || isLoadingSpecialties) {
       return <CustomFullScreenLoading />;
    }
 
-   const filteredEmployees = (employeesData?.employeeListDto || []).filter((emp) => {
-      const term = searchTerm.toLowerCase();
-      return (
-         emp.fullName.toLowerCase().includes(term) ||
-         emp.dni.toLowerCase().includes(term) ||
-         (emp.especialtyName && emp.especialtyName.toLowerCase().includes(term))
-      );
-   });
+   const filteredEmployees = employeesData?.employeeListDto || [];
 
 
    return (
@@ -80,7 +86,7 @@ export const EmployeesPage = () => {
                <div className="flex gap-4">
                   <div className="flex-1 relative">
                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                     <Input placeholder="Buscar empleado por nombre o DNI..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+                     <Input placeholder="Buscar empleado por nombre o DNI..." value={searchTerm} onChange={handleSearchChange} className="pl-9" />
                   </div>
                   <Button onClick={handleOpenCreate}>
                      <Plus className="h-4 w-4 mr-2" />
@@ -104,6 +110,7 @@ export const EmployeesPage = () => {
                   <TableHeader>
                      <TableRow>
                         <TableHead>ID</TableHead>
+                        <TableHead>Imagen</TableHead>
                         <TableHead>Nombre</TableHead>
                         <TableHead>DNI</TableHead>
                         <TableHead>Especialidad</TableHead>
@@ -119,6 +126,15 @@ export const EmployeesPage = () => {
                      {filteredEmployees.map((employee) => (
                         <TableRow key={employee.id}>
                            <TableCell>{employee.id}</TableCell>
+                           <TableCell>
+                              {employee.photoUrl ? (
+                                 <img src={employee.photoUrl} alt={employee.fullName} className="w-10 h-10 rounded-full object-cover" />
+                              ) : (
+                                 <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
+                                    <UserRound className="w-6 h-6 text-slate-500" />
+                                 </div>
+                              )}
+                           </TableCell>
                            <TableCell className="font-medium">{employee.fullName}</TableCell>
                            <TableCell>{employee.dni}</TableCell>
                            <TableCell>{employee.especialtyName || "-"}</TableCell>

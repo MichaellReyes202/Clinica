@@ -32,6 +32,7 @@ import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
 import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsultationPage";
 import { ForceChangePasswordPage } from "./auth/pages/ForceChangePasswordPage";
+import { ResetPasswordPage } from "./auth/pages/ResetPasswordPage";
 
 export const appRouter = createBrowserRouter([
   // 1. Rutas Públicas (Landing Page)
@@ -62,6 +63,10 @@ export const appRouter = createBrowserRouter([
       {
         path: 'login',
         element: <LoginPage />
+      },
+      {
+        path: 'reset-password',
+        element: <ResetPasswordPage />
       }
     ]
   },

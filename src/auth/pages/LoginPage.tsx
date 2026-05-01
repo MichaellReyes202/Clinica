@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useAuthMutation } from "@/clinica/hooks/useAuthMutations";
 import { useAuthStore } from "../store/auth.store";
 import { useEffect, useState, useMemo } from "react";
+import { forgotPasswordAction } from "../actions/login.action";
 
 // --- Importaciones de tsParticles ---
 import Particles, { initParticlesEngine } from "@tsparticles/react";
@@ -47,6 +48,11 @@ export const LoginPage = () => {
   const clearBlocked = useAuthStore((state) => state.clearBlocked);
 
   const [_, forceUpdate] = useState(0);
+
+  // Forgot password state
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [isSendingForgot, setIsSendingForgot] = useState(false);
 
   // Inicializar tsParticles solo una vez
   useEffect(() => {
@@ -102,6 +108,24 @@ export const LoginPage = () => {
       return;
     }
     mutate(data);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotEmail) {
+      toast.error("Por favor ingresa tu correo de la clínica");
+      return;
+    }
+    try {
+      setIsSendingForgot(true);
+      const res = await forgotPasswordAction(forgotEmail);
+      toast.success(res.message || "Por favor revisa tu correo personal");
+      setIsForgotPassword(false);
+      setForgotEmail("");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error al enviar el correo");
+    } finally {
+      setIsSendingForgot(false);
+    }
   };
 
   // Configuración interactiva de las partículas (Tema Médico / Azul)
@@ -186,30 +210,53 @@ export const LoginPage = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Correo</Label>
-                  <Input id="email" type="email" placeholder="usuario@oficentro.com" {...register("email")} />
-                  {errors.email && (<p className="text-sm font-medium text-red-500 mt-1">{errors.email.message}</p>)}
-                </div>
-                <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Contraseña</Label>
+              {!isForgotPassword ? (
+                <>
+                  <div className="flex flex-col gap-6">
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Correo</Label>
+                      <Input id="email" type="email" placeholder="usuario@oficentro.com" {...register("email")} />
+                      {errors.email && (<p className="text-sm font-medium text-red-500 mt-1">{errors.email.message}</p>)}
+                    </div>
+                    <div className="grid gap-2">
+                      <div className="flex items-center">
+                        <Label htmlFor="password">Contraseña</Label>
+                        <button type="button" onClick={() => setIsForgotPassword(true)} className="ml-auto inline-block text-sm underline text-blue-500 hover:text-blue-700">
+                          ¿Olvidó su contraseña?
+                        </button>
+                      </div>
+                      <Input id="password" type="password" placeholder="Password" {...register("password")} />
+                      {errors.password && (<p className="text-sm font-medium text-red-500 mt-1">{errors.password.message}</p>)}
+                    </div>
+                    <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 transition-colors" disabled={isPending || isBlocked}>
+                      {isPending ? 'Ingresando...' : 'Ingresar'}
+                    </Button>
                   </div>
-                  <Input id="password" type="password" placeholder="Password" {...register("password")} />
-                  {errors.password && (<p className="text-sm font-medium text-red-500 mt-1">{errors.password.message}</p>)}
-                </div>
-                <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 transition-colors" disabled={isPending || isBlocked}>
-                  {isPending ? 'Ingresando...' : 'Ingresar'}
-                </Button>
-              </div>
-              <div>
-                {isBlocked && (
-                  <p className="text-red-500 text-center mt-4 font-medium">
-                    Cuenta bloqueada. Intenta en {formatTime(getTimeLeft())} minutos.
+                  <div>
+                    {isBlocked && (
+                      <p className="text-red-500 text-center mt-4 font-medium">
+                        Cuenta bloqueada. Intenta en {formatTime(getTimeLeft())} minutos.
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Ingresa tu correo de la clínica. Te enviaremos un código de recuperación a tu <strong>correo personal</strong> registrado.
                   </p>
-                )}
-              </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="forgot-email">Correo de Clínica</Label>
+                    <Input id="forgot-email" type="email" placeholder="usuario@oficentro.com" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} />
+                  </div>
+                  <Button type="button" onClick={handleForgotPassword} className="w-full bg-blue-500 hover:bg-blue-600 transition-colors" disabled={isSendingForgot}>
+                    {isSendingForgot ? 'Enviando...' : 'Enviar Código'}
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => setIsForgotPassword(false)} className="w-full">
+                    Volver a iniciar sesión
+                  </Button>
+                </div>
+              )}
             </form>
             <div className="relative hidden bg-muted md:block">
               <img src={img_back} alt="Image" className="absolute inset-0 h-full w-full object-cover" />

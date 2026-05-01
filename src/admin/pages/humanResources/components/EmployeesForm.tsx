@@ -25,6 +25,7 @@ import {
 } from "../../../Validation/EmployeeSchema";
 import { useEmployeeMutation } from "@/clinica/hooks/useEmployeeMutation";
 import { Switch } from "@/components/ui/switch";
+import { UserRound } from "lucide-react";
 
 
 interface EmployeesFormProps {
@@ -96,6 +97,7 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
          hireDate: values.hireDate,
          dni: values.dni?.trim() ?? "",
          email: values.email?.trim() ?? "",
+         photo: values.photo && values.photo.length > 0 ? values.photo[0] : undefined,
          // isActive: values.isActive ?? true,
       };
 
@@ -129,6 +131,17 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                {isEditing && (<Input type="hidden" {...register("id")} placeholder="Nombre" />)}
+
+               <div className="flex justify-center mb-6 mt-2">
+                  {initialEmployee?.photoUrl ? (
+                     <img src={initialEmployee.photoUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-muted" />
+                  ) : (
+                     <div className="w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center border-4 border-muted">
+                        <UserRound className="w-12 h-12 text-slate-500" />
+                     </div>
+                  )}
+               </div>
+
                <div className="grid gap-4 md:grid-cols-2">
                   <div>
                      <Label>Primer Nombre *</Label>
@@ -220,10 +233,17 @@ export const EmployeesForm = ({ initialEmployee, onClose, positions, specialties
                   </div>
                </div>
 
-               <div>
-                  <Label>Correo</Label>
-                  <Input type="email" {...register("email")} placeholder="Correo electrónico" />
-                  {errors.email && (<p className="text-red-500 text-sm">{errors.email.message}</p>)}
+               <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                     <Label>Correo</Label>
+                     <Input type="email" {...register("email")} placeholder="Correo electrónico" />
+                     {errors.email && (<p className="text-red-500 text-sm">{errors.email.message}</p>)}
+                  </div>
+                  <div>
+                     <Label>Foto de Perfil</Label>
+                     <Input type="file" accept="image/*" {...register("photo")} />
+                     {errors.photo && (<p className="text-red-500 text-sm">{errors.photo.message as string}</p>)}
+                  </div>
                </div>
 
                {/* Campo visible solo en edición */}

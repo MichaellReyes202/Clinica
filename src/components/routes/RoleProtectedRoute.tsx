@@ -9,8 +9,8 @@ interface Props {
 export const RoleProtectedRoute = ({ allowedRoles, children }: Props) => {
   const authStatus = useAuthStore(state => state.authStatus);
   const hasRole = useAuthStore(state => state.hasRole);
+  const user = useAuthStore(state => state.user);
 
-  console.log("entro")
   if (authStatus === 'checking') {
     return (
       <div className="flex items-center justify-center h-screen w-full bg-background">
@@ -26,7 +26,6 @@ export const RoleProtectedRoute = ({ allowedRoles, children }: Props) => {
     return <Navigate to="/auth/login" />;
   }
 
-  const user = useAuthStore(state => state.user);
   if (user?.requiresPasswordChange) {
     return <Navigate to="/auth/change-password" replace />;
   }

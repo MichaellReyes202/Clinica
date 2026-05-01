@@ -22,6 +22,7 @@ export interface EmployeeListDto {
   isActive: boolean;
   positionId: number;
   specialtyId: number;
+  photoUrl?: string;
 }
 
 export interface Employee {
@@ -38,6 +39,7 @@ export interface Employee {
   dni: string;
   email: string;
   isActive: boolean;
+  photoUrl?: string;
 }
 
 export interface EmployeeCreationDto {
@@ -52,6 +54,7 @@ export interface EmployeeCreationDto {
   dni?: string;
   specialtyId?: number | null;
   email: string;
+  photo?: File | null;
 }
 
 export interface EmployeeUpdateDto extends EmployeeCreationDto {

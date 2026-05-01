@@ -36,3 +36,23 @@ export const resetPasswordAction = async (id: number): Promise<UserCreation> => 
   const { data } = await clinicaApi.post<UserCreation>(`/auth/reset-password/${id}`);
   return data;
 };
+
+export const forgotPasswordAction = async (email: string): Promise<{ message: string }> => {
+  const { data } = await clinicaApi.post<{ message: string }>("/auth/forgot-password", { email });
+  return data;
+};
+
+export const resetPasswordWithCodeAction = async (
+  email: string,
+  code: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<{ message: string }> => {
+  const { data } = await clinicaApi.post<{ message: string }>("/auth/reset-password-code", {
+    email,
+    code,
+    newPassword,
+    confirmPassword,
+  });
+  return data;
+};
