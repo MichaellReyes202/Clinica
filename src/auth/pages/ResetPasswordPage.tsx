@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { BackgroundParticles } from "@/clinica/components/BackgroundParticles";
+import { initParticlesEngine } from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
 
 const formSchema = z.object({
   code: z.string().min(6, "El código debe tener al menos 6 caracteres"),
@@ -25,6 +28,7 @@ const formSchema = z.object({
 export type ResetPasswordFormData = z.infer<typeof formSchema>;
 
 export const ResetPasswordPage = () => {
+  const [initParticles, setInitParticles] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -37,6 +41,12 @@ export const ResetPasswordPage = () => {
       navigate("/auth/login", { replace: true });
     }
   }, [email, navigate]);
+
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    }).then(() => setInitParticles(true));
+  }, []);
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(formSchema),
@@ -64,8 +74,10 @@ export const ResetPasswordPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50/50 p-4 relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" /> */}
+
+      <BackgroundParticles init={initParticles} />
 
       <Card className="w-full max-w-md shadow-2xl border-slate-200/60 backdrop-blur-sm z-10 animate-in fade-in zoom-in duration-500">
         <CardHeader className="space-y-3 text-center pb-6">

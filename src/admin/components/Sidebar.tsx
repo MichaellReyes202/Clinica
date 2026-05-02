@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   ChevronLeft,
+  Clock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Link, useLocation } from "react-router"
@@ -109,6 +110,7 @@ const menuItems: MenuItem[] = [
     allowedRoles: [1],
     submenu: [
       { title: "Usuarios", href: "/dashboard/admin/users", baseUrl: "/dashboard/admin/users", allowedRoles: [1] },
+      { title: "Horarios", href: "/dashboard/admin/schedules", baseUrl: "/dashboard/admin/schedules", allowedRoles: [1] },
       { title: "Auditoría", href: "/dashboard/admin/audit", baseUrl: "/dashboard/admin/audit", allowedRoles: [1] },
     ],
 

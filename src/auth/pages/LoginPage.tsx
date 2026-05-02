@@ -1,10 +1,42 @@
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@/components/ui/label";
 import * as z from "zod";
-import { Stethoscope } from "lucide-react";
+import { Lock, Mail, Stethoscope } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +47,14 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useAuthMutation } from "@/clinica/hooks/useAuthMutations";
 import { useAuthStore } from "../store/auth.store";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { forgotPasswordAction } from "../actions/login.action";
 
 // --- Importaciones de tsParticles ---
-import Particles, { initParticlesEngine } from "@tsparticles/react";
+import { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import type { ISourceOptions } from "@tsparticles/engine";
+import { BackgroundParticles } from "@/clinica/components/BackgroundParticles";
+import { BlockedTimer } from "@/clinica/components/BlockedTimer";
 
 // Esquema de validación con Zod
 export const loginSchema = z.object({
@@ -37,158 +70,63 @@ export const loginSchema = z.object({
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
+
+
+
+
+
 export const LoginPage = () => {
   const navigate = useNavigate();
-
-  // Estado para inicializar el motor de partículas
   const [initParticles, setInitParticles] = useState(false);
-
   const isBlocked = useAuthStore((state) => state.isBlocked);
-  const getTimeLeft = useAuthStore((state) => state.getTimeLeft);
-  const clearBlocked = useAuthStore((state) => state.clearBlocked);
 
-  const [_, forceUpdate] = useState(0);
-
-  // Forgot password state
+  // Estados de Forgot Password
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [isSendingForgot, setIsSendingForgot] = useState(false);
 
-  // Inicializar tsParticles solo una vez
   useEffect(() => {
     initParticlesEngine(async (engine) => {
       await loadSlim(engine);
-    }).then(() => {
-      setInitParticles(true);
-    });
+    }).then(() => setInitParticles(true));
   }, []);
-
-  useEffect(() => {
-    if (!isBlocked) return;
-
-    const interval = setInterval(() => {
-      const remaining = getTimeLeft();
-
-      if (remaining <= 0) {
-        clearBlocked();
-        clearInterval(interval);
-      } else {
-        forceUpdate((x) => x + 1);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isBlocked, getTimeLeft, clearBlocked]);
 
   const { register, handleSubmit, formState: { errors }, setError } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-  const formatTime = (totalSeconds: number) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
   const { mutate, isPending } = useAuthMutation(
-    () => {
-      navigate("/dashboard", { replace: true })
-    }, setError,
-    (value: string): void => {
-      toast(value, { duration: 6000 })
-    }
+    () => navigate("/dashboard", { replace: true }),
+    setError,
+    (val) => toast(val, { duration: 6000 })
   );
 
-  const handleLogin = async (data: LoginFormValues) => {
-    if (isBlocked) {
-      return;
-    }
-    mutate(data);
+  const handleLogin = (data: LoginFormValues) => {
+    if (!isBlocked) mutate(data);
   };
 
   const handleForgotPassword = async () => {
-    if (!forgotEmail) {
-      toast.error("Por favor ingresa tu correo de la clínica");
-      return;
-    }
+    if (!forgotEmail) return toast.error("Ingresa tu correo");
     try {
       setIsSendingForgot(true);
       const res = await forgotPasswordAction(forgotEmail);
-      toast.success(res.message || "Por favor revisa tu correo personal");
+      toast.success(res.message || "Revisa tu correo personal");
       setIsForgotPassword(false);
-      setForgotEmail("");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error al enviar el correo");
+      toast.error("Error al enviar el correo");
     } finally {
       setIsSendingForgot(false);
     }
   };
 
-  // Configuración interactiva de las partículas (Tema Médico / Azul)
-  const particlesOptions: ISourceOptions = useMemo(
-    () => ({
-      background: {
-        color: {
-          value: "transparent", // Transparente para que tome el color de tu app
-        },
-      },
-      fpsLimit: 60,
-      interactivity: {
-        events: {
-          onClick: { enable: true, mode: "push" },
-          onHover: { enable: true, mode: "repel" },
-        },
-        modes: {
-          push: { quantity: 4 },
-          repel: { distance: 150, duration: 0.6 },
-        },
-      },
-      particles: {
-        color: { value: "#3b82f6" }, // Azul (tailwind blue-500)
-        links: {
-          color: "#93c5fd", // Azul claro (tailwind blue-300)
-          distance: 150,
-          enable: true,
-          opacity: 0.5,
-          width: 1,
-        },
-        move: {
-          direction: "none",
-          enable: true,
-          outModes: { default: "bounce" },
-          random: false,
-          speed: 1.5,
-          straight: false,
-        },
-        number: {
-          density: { enable: true, width: 800, height: 800 },
-          value: 80,
-        },
-        opacity: { value: 0.5 },
-        shape: { type: "circle" },
-        size: { value: { min: 1, max: 3 } },
-      },
-      detectRetina: true,
-    }),
-    []
-  );
+
 
   return (
-    /* Contenedor principal a pantalla completa para el fondo */
+
     <div className="relative min-h-screen w-full flex items-center justify-center bg-background overflow-hidden p-4">
 
-      {/* Capa de Partículas (Fondo) */}
-      {initParticles && (
-        <Particles
-          id="tsparticles"
-          options={particlesOptions}
-          className="absolute inset-0 z-0" // Posicionado detrás
-        />
-      )}
+      <BackgroundParticles init={initParticles} />
 
       {/* Capa de la Tarjeta (Frente) */}
       <div className="relative z-10 flex flex-col gap-6 animate-fade-in-up w-full max-w-4xl shadow-accent">
@@ -221,7 +159,7 @@ export const LoginPage = () => {
                     <div className="grid gap-2">
                       <div className="flex items-center">
                         <Label htmlFor="password">Contraseña</Label>
-                        <button type="button" onClick={() => setIsForgotPassword(true)} className="ml-auto inline-block text-sm underline text-blue-500 hover:text-blue-700">
+                        <button type="button" onClick={() => setIsForgotPassword(true)} className="ml-auto inline-block cursor-pointer text-sm underline text-blue-500 hover:text-blue-700">
                           ¿Olvidó su contraseña?
                         </button>
                       </div>
@@ -234,9 +172,7 @@ export const LoginPage = () => {
                   </div>
                   <div>
                     {isBlocked && (
-                      <p className="text-red-500 text-center mt-4 font-medium">
-                        Cuenta bloqueada. Intenta en {formatTime(getTimeLeft())} minutos.
-                      </p>
+                      <BlockedTimer />
                     )}
                   </div>
                 </>
@@ -269,6 +205,22 @@ export const LoginPage = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -42,6 +42,17 @@ export const forgotPasswordAction = async (email: string): Promise<{ message: st
   return data;
 };
 
+export const adminResetPasswordByEmailAction = async (
+  targetUserId: number,
+  adminPassword: string
+): Promise<{ message: string }> => {
+  const { data } = await clinicaApi.post<{ message: string }>("/auth/admin-reset-password-email", {
+    targetUserId,
+    adminPassword,
+  });
+  return data;
+};
+
 export const resetPasswordWithCodeAction = async (
   email: string,
   code: string,

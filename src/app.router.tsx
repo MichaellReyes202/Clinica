@@ -28,11 +28,13 @@ import { SpecialtiesPage } from "./admin/pages/humanResources/SpecialtiesPage";
 import { PositionsPage } from "./admin/pages/humanResources/PositionsPage";
 import { ReportsPage } from "./admin/pages/reports/ReportsPage";
 import UsersManagementPage from "./admin/pages/admin/UsersManagementPage";
+import { ScheduleManagementPage } from "./admin/pages/schedules/ScheduleManagementPage";
 import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
 import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsultationPage";
 import { ForceChangePasswordPage } from "./auth/pages/ForceChangePasswordPage";
 import { ResetPasswordPage } from "./auth/pages/ResetPasswordPage";
+import { UserProfilePage } from "./admin/pages/profile/UserProfilePage";
 
 export const appRouter = createBrowserRouter([
   // 1. Rutas Públicas (Landing Page)
@@ -90,6 +92,12 @@ export const appRouter = createBrowserRouter([
       {
         index: true,
         element: <DashboardPage />
+      },
+
+      // --- Perfil del usuario ---
+      {
+        path: 'profile',
+        element: <UserProfilePage />
       },
 
       // --- Gestión de Pacientes ---
@@ -282,6 +290,14 @@ export const appRouter = createBrowserRouter([
         element: (
           <RoleProtectedRoute allowedRoles={[1]}>
             <UsersManagementPage />
+          </RoleProtectedRoute>
+        )
+      },
+      {
+        path: 'admin/schedules',
+        element: (
+          <RoleProtectedRoute allowedRoles={[1]}>
+            <ScheduleManagementPage />
           </RoleProtectedRoute>
         )
       },

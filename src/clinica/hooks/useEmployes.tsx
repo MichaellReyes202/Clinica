@@ -55,4 +55,15 @@ export const useUserMutation = () => {
   };
 };
 
+// Hook para obtener TODOS los empleados sin paginación (usado en selects/schedules)
+export const useAllEmployees = () => {
+  return useQuery({
+    queryKey: ['employees-all'],
+    queryFn: () => getEmployeeAction({ limit: 200, offset: 0 }),
+    staleTime: 1000 * 60 * 10,
+    select: (data) => data.employeeListDto ?? [],
+  });
+};
+
+
 
