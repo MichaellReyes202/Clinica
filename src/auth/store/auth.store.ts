@@ -1,7 +1,6 @@
 import type { User } from "@/interfaces/Users.response";
 import { create } from "zustand";
 import { checkAuthAction } from "../actions/login.action";
-import { boolean } from "zod";
 
 type AuthStatus = "authenticated" | "not-authenticated" | "checking";
 
@@ -18,6 +17,7 @@ type AuthState = {
   isAdmin: () => boolean;
   isDoctor: () => boolean;
   hasRole: (allowedRoles: number[]) => boolean;
+  hasPermission: (permission?: string) => boolean;
 
   // Actions
   setCredentials: (user: User, token: string) => void;
@@ -57,11 +57,20 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     if (!roleId) return false;
     return allowedRoles.includes(roleId);
   },
+  hasPermission: (permission?: string) => {
+    if (!permission) return false;
+    const permissions = get().user?.permissions ?? get().user?.views ?? [];
+    return permissions.includes(permission);
+  },
 
   // action
   setCredentials: (user, token) => {
     localStorage.setItem("token", token);
-    set({ user, token, authStatus: "authenticated", isBlocked: false });
+    const normalizedUser = {
+      ...user,
+      permissions: user.permissions ?? user.views ?? [],
+    };
+    set({ user: normalizedUser, token, authStatus: "authenticated", isBlocked: false });
   },
 
   logout: () => {
@@ -105,8 +114,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   checkAuthStatus: async () => {
     try {
       const { user, token } = await checkAuthAction();
+      const normalizedUser = {
+        ...user,
+        permissions: user.permissions ?? user.views ?? [],
+      };
       set({
-        user,
+        user: normalizedUser,
         token,
         authStatus: "authenticated",
       });

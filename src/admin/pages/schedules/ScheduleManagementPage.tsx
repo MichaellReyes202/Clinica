@@ -52,16 +52,18 @@ const EditClinicDayModal = ({ schedule, onClose }: EditClinicDayModalProps) => {
             <Label>¿Día abierto?</Label>
             <Switch checked={isOpen} onCheckedChange={setIsOpen} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          
+          <div className="grid grid-cols-2 gap-4" >
             <div>
               <Label>Hora apertura</Label>
-              <Input type="time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} disabled={!isOpen} />
+              <Input type="time" value={openTime} className={` ${isOpen ? '' : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-70' } `} onChange={(e) => setOpenTime(e.target.value)} disabled={!isOpen} />
             </div>
             <div>
               <Label>Hora cierre</Label>
-              <Input type="time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} disabled={!isOpen} />
+              <Input type="time" value={closeTime} className={` ${isOpen ? '' : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-70' } `} onChange={(e) => setCloseTime(e.target.value)} disabled={!isOpen} />
             </div>
           </div>
+
           <div className="flex gap-2 pt-2">
             <Button variant="outline" className="flex-1" onClick={onClose} disabled={mutation.isPending}>Cancelar</Button>
             <Button className="flex-1" onClick={handleSave} disabled={mutation.isPending}>
@@ -146,6 +148,7 @@ const ClinicScheduleSection = () => {
         </div>
         <CardDescription>Define los días y horas en que la clínica atiende pacientes.</CardDescription>
       </CardHeader>
+
       <CardContent>
         <Table>
           <TableHeader>
@@ -162,11 +165,8 @@ const ClinicScheduleSection = () => {
               <TableRow key={s.id}>
                 <TableCell className="font-medium">{s.dayName}</TableCell>
                 <TableCell>
-                  {s.isOpen ? (
-                    <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3" />Abierto</Badge>
-                  ) : (
-                    <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" />Cerrado</Badge>
-                  )}
+                  {s.isOpen ? (<Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3" />Abierto</Badge>) 
+                  : (<Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" />Cerrado</Badge>)}
                 </TableCell>
                 <TableCell>{s.isOpen ? s.openTime : "—"}</TableCell>
                 <TableCell>{s.isOpen ? s.closeTime : "—"}</TableCell>
@@ -178,6 +178,7 @@ const ClinicScheduleSection = () => {
               </TableRow>
             ))}
           </TableBody>
+
         </Table>
       </CardContent>
       {editing && <EditClinicDayModal schedule={editing} onClose={() => setEditing(null)} />}
@@ -216,9 +217,8 @@ const EmployeeScheduleSection = () => {
         <CardDescription>Configura la disponibilidad semanal y la duración estándar de cita de cada doctor.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {isLoading ? (
-          <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
-        ) : (
+        {isLoading ? (<div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>) : 
+        (
           <div className="flex gap-4 items-end flex-wrap">
             <div className="flex-1 min-w-[200px]">
               <Label className="mb-1 block">Seleccionar Empleado</Label>
@@ -333,9 +333,8 @@ export const ScheduleManagementPage = () => {
           <p className="text-muted-foreground">Configure el horario de la clínica y la disponibilidad de cada doctor</p>
         </div>
       </div>
-
       <ClinicScheduleSection />
-      <EmployeeScheduleSection />
+      {/* <EmployeeScheduleSection /> */}
     </div>
   );
 };

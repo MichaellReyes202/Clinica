@@ -26,10 +26,7 @@ export const getClinicSchedulesAction = async (): Promise<ClinicScheduleDto[]> =
   return data;
 };
 
-export const updateClinicScheduleAction = async (
-  id: number,
-  payload: { isOpen: boolean; openTime: string; closeTime: string }
-): Promise<ClinicScheduleDto> => {
+export const updateClinicScheduleAction = async (id: number, payload: { isOpen: boolean; openTime: string; closeTime: string }): Promise<ClinicScheduleDto> => {
   const { data } = await clinicaApi.put<ClinicScheduleDto>(`/schedules/clinic/${id}`, payload);
   return data;
 };

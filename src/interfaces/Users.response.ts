@@ -5,6 +5,8 @@ export interface User {
   isActive: boolean;
   roles: string[];
   roleId: number;
+  views?: string[];
+  permissions?: string[];
   employeeId?: number;
   requiresPasswordChange: boolean;
 }

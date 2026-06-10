@@ -3,7 +3,7 @@ import { AuthLayout } from "./auth/layout/AuthLayout";
 import { ClinicaLayout } from "./clinica/layout/ClinicaLayout";
 import LandingPage from "./clinica/pages/LandingPage";
 import { NotAuthenticatedRoute } from "./components/routes/ProtectedRoutes";
-import { RoleProtectedRoute } from "./components/routes/RoleProtectedRoute";
+import { PermissionProtectedRoute } from "./components/routes/PermissionProtectedRoute";
 import { LoginPage } from "./auth/pages/LoginPage";
 import { AdminLayout } from "./admin/layout/AdminLayout";
 import DashboardPage from "./admin/pages/dashboard/DashboardPage";
@@ -31,6 +31,7 @@ import UsersManagementPage from "./admin/pages/admin/UsersManagementPage";
 import { ScheduleManagementPage } from "./admin/pages/schedules/ScheduleManagementPage";
 import { AuditPage } from "./admin/pages/admin/AuditPage";
 import { DigitalFilesPage } from "./admin/pages/admin/DigitalFilesPage";
+import { PermissionsPage } from "./admin/pages/admin/PermissionsPage";
 import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsultationPage";
 import { ForceChangePasswordPage } from "./auth/pages/ForceChangePasswordPage";
 import { ResetPasswordPage } from "./auth/pages/ResetPasswordPage";
@@ -83,9 +84,9 @@ export const appRouter = createBrowserRouter([
   {
     path: '/dashboard',
     element: (
-      <RoleProtectedRoute allowedRoles={[1, 2, 3, 4, 5]}>
+      <PermissionProtectedRoute requiredPermission="Dashboard">
         <AdminLayout />
-      </RoleProtectedRoute>
+      </PermissionProtectedRoute>
     ),
     children: [
       // --- Home del Dashboard ---
@@ -106,45 +107,45 @@ export const appRouter = createBrowserRouter([
         element: <SearchPatients />
       },
       {
-        path: 'patients/register/new', // Crear (Admin y Recepción)
+        path: 'patients/register/new',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Pacientes - Registrar">
             <RegisterPatients />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
-        path: 'patients/edit/:id', // Editar (Admin y Recepción)
+        path: 'patients/edit/:id',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Pacientes - Registrar">
             <RegisterPatients />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
-        path: 'patients/:patientId/history', // Historial Clínico (Admin, Médico, Enfermero, Bioanalista)
+        path: 'patients/:patientId/history',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 3, 4, 5]}>
+          <PermissionProtectedRoute requiredPermission="Pacientes - Historial de Paciente">
             <PatientHistoryPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
 
       // --- Gestión de Citas ---
       {
-        path: 'appointments/today', // Vista principal del Doctor (Solo Médico)
+        path: 'appointments/today',
         element: (
-          <RoleProtectedRoute allowedRoles={[3]}>
+          <PermissionProtectedRoute requiredPermission="Citas - Hoy">
             <TodayAppointmentsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
-        path: 'appointments/schedule', // Agendar (Admin y Recepción)
+        path: 'appointments/schedule',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Citas - Agendar">
             <ScheduleAppointmentPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
@@ -154,29 +155,27 @@ export const appRouter = createBrowserRouter([
 
       // --- Consultas Médicas (Flujo de Trabajo) ---
       {
-        // Esta es la ruta MAESTRA de la consulta.
         path: 'consultations/process/:appointmentId',
         element: (
-          <RoleProtectedRoute allowedRoles={[3]}>
+          <PermissionProtectedRoute requiredPermission="Consultas - Activa">
             <ActiveConsultationPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
-        // Ruta opcional: Para crear una consulta manual
         path: 'consultations/create',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 3]}>
+          <PermissionProtectedRoute requiredPermission="Consultas - Crear">
             <CreateConsultationPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'consultations/history',
         element: (
-          <RoleProtectedRoute allowedRoles={[3]}>
+          <PermissionProtectedRoute requiredPermission="Consultas - Historial">
             <ConsultationHistoryPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
 
@@ -184,25 +183,25 @@ export const appRouter = createBrowserRouter([
       {
         path: 'laboratory/results',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 5]}>
+          <PermissionProtectedRoute requiredPermission="Laboratorio - Registrar Resultados">
             <RegisterResultsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'laboratory/history',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 5]}>
+          <PermissionProtectedRoute requiredPermission="Laboratorio - Historial">
             <ExamHistoryPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
-        path: 'laboratory/manage', // Catálogo de exámenes
+        path: 'laboratory/manage',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 5]}>
+          <PermissionProtectedRoute requiredPermission="Laboratorio - Catálogo de Exámenes">
             <ManageExamsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
 
@@ -210,33 +209,33 @@ export const appRouter = createBrowserRouter([
       {
         path: 'billing/invoice',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Facturación - Factura">
             <GenerateInvoicePage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'billing/payments',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Facturación - Pagos">
             <RegisterPaymentsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
-        path: 'billing/close', // Cierre de caja
+        path: 'billing/close',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Facturación - Cierre de caja">
             <CashClosurePage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'billing/promotions',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 2]}>
+          <PermissionProtectedRoute requiredPermission="Facturación - Promociones">
             <PromotionsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
 
@@ -244,33 +243,33 @@ export const appRouter = createBrowserRouter([
       {
         path: 'hr/employees',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Recursos Humanos - Empleados">
             <EmployeesPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'hr/attendance',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Recursos Humanos - Asistencia">
             <AttendancePage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'hr/specialties',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Recursos Humanos - Especialidades">
             <SpecialtiesPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'hr/position',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Recursos Humanos - Cargos">
             <PositionsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
 
@@ -278,9 +277,9 @@ export const appRouter = createBrowserRouter([
       {
         path: 'reports',
         element: (
-          <RoleProtectedRoute allowedRoles={[1, 4]}>
+          <PermissionProtectedRoute requiredPermission="Reportes">
             <ReportsPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
 
@@ -288,33 +287,41 @@ export const appRouter = createBrowserRouter([
       {
         path: 'admin/users',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Administración - Usuarios">
             <UsersManagementPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'admin/schedules',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Administración - Horarios">
             <ScheduleManagementPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'admin/audit',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Administración - Auditoría">
             <AuditPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
         )
       },
       {
         path: 'admin/files',
         element: (
-          <RoleProtectedRoute allowedRoles={[1]}>
+          <PermissionProtectedRoute requiredPermission="Administración - Archivos Digitales">
             <DigitalFilesPage />
-          </RoleProtectedRoute>
+          </PermissionProtectedRoute>
+        )
+      },
+      {
+        path: 'admin/permissions',
+        element: (
+          <PermissionProtectedRoute requiredPermission="Administración - Usuarios">
+            <PermissionsPage />
+          </PermissionProtectedRoute>
         )
       }
     ]
