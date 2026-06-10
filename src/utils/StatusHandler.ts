@@ -4,7 +4,9 @@ import type { BackendError } from "@/interfaces/Error.response";
 type StatusHandler = (error: BackendError) => void;
 
 const statusHandlers: Record<number, StatusHandler> = {
-  401: (error) => {},
+  401: () => {
+    useAuthStore.getState().logout();
+  },
 
   403: () => {
     console.warn("No tienes permisos");
