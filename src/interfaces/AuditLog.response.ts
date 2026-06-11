@@ -38,6 +38,7 @@ export const ActionType = {
    DELETE: 12,
    STATUS_CHANGE: 20,
    REPORT_GENERATED: 21,
+   RESET_PASSWORD: 22,
 } as const;
 
 export type ActionType = typeof ActionType[keyof typeof ActionType];

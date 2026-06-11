@@ -102,41 +102,21 @@ interface SidebarProps {
 
 
 export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
-
   const location = useLocation()
-
   const pathname = location.pathname
-
   const hasPermission = useAuthStore(state => state.hasPermission);
-
-
-
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-
-
-
   useEffect(() => {
-
     const activeMenu = menuItems.find(
-
       (item) =>
-
         item.submenu &&
-
         item.submenu.some((sub) => pathname.startsWith(sub.baseUrl))
-
     )
-
     if (activeMenu) {
-
       setExpandedItems(prev => {
-
         if (!prev.includes(activeMenu.title)) return [...prev, activeMenu.title];
-
         return prev;
-
       })
-
     }
 
   }, [pathname])
@@ -146,15 +126,10 @@ export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
   const toggleExpanded = (title: string) => {
 
     setExpandedItems((prev) =>
-
       prev.includes(title)
-
         ? prev.filter((item) => item !== title)
-
         : [...prev, title]
-
     )
-
   }
 
 
@@ -164,26 +139,15 @@ export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
   const filteredMenuItems = menuItems.map(item => {
 
     // 1. Verificar si el usuario tiene permiso para el item padre
-
     if (item.requiredPermission && !hasPermission(item.requiredPermission)) return null;
 
-
-
     // 2. Si tiene submenu, filtrar los hijos
-
     if (item.submenu) {
-
       const filteredSubmenu = item.submenu.filter(sub => !sub.requiredPermission || hasPermission(sub.requiredPermission));
-
       // Si después de filtrar no quedan hijos, no mostrar el padre
-
       if (filteredSubmenu.length === 0) return null;
-
       return { ...item, submenu: filteredSubmenu };
-
     }
-
-
 
     return item;
 
@@ -256,63 +220,36 @@ export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
                                   : "text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent"
 
                               )}
-
                             >
-
                               {subitem.title}
 
                             </Link>
-
                           </li>
-
                         ))}
-
                       </ul>
-
                     </div>
-
                   </>
-
                 ) : (
 
                   <Link
-
                     to={item.href!}
-
                     className={cn(
-
                       "flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors",
-
                       pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground",
-
                       isCollapsed && "justify-center px-2"
-
                     )}
-
                     title={isCollapsed ? item.title : undefined}
-
                   >
-
                     <item.icon className="h-5 w-5 shrink-0" />
-
                     {!isCollapsed && <span className="text-sm font-medium">{item.title}</span>}
-
                   </Link>
-
                 )}
-
               </div>
-
             ))}
-
           </nav>
-
         </div>
-
       </aside>
-
     </>
-
   )
 
 }

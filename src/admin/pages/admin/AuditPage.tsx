@@ -51,6 +51,7 @@ export const AuditPage = () => {
          case ActionType.DELETE: return <Badge variant="destructive">Eliminar</Badge>
          case ActionType.STATUS_CHANGE: return <Badge variant="destructive">Cambio de Estado</Badge>
          case ActionType.REPORT_GENERATED: return <Badge variant="destructive">Reporte Generado</Badge>
+         case ActionType.RESET_PASSWORD: return <Badge variant="outline">Restablecer Contraseña</Badge>
          default: return <Badge>{action}</Badge>
       }
    }
@@ -65,8 +66,19 @@ export const AuditPage = () => {
    }
 
    const getModuleName = (module: AuditModuletype) => {
-      const entry = Object.entries(AuditModuletype).find(([_, value]) => value === module);
-      return entry ? entry[0] : module;
+      const moduleNames: Record<number, string> = {
+         1: "Usuarios",
+         2: "Pacientes",
+         3: "Citas",
+         4: "Sistema",
+         5: "Empleados",
+         6: "Especialidades",
+         7: "Tipos de examen",
+         8: "Cargos",
+         9: "Roles",
+         10: "Autenticación"
+      };
+      return moduleNames[module] || "Desconocido";
    }
 
    return (
@@ -182,7 +194,7 @@ export const AuditPage = () => {
                   </div>
                </div>
 
-               <div className="rounded-md border">
+               <div className="rounded-md border overflow-hidden w-full">
                   <Table>
                      <TableHeader>
                         <TableRow>
@@ -197,7 +209,7 @@ export const AuditPage = () => {
                      <TableBody>
                         {isLoading ? (
                            <TableRow>
-                              <TableCell colSpan={5} className="h-24 text-center">
+                              <TableCell colSpan={6} className="h-24 text-center">
                                  <div className="flex justify-center items-center gap-2">
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                     Cargando registros...
@@ -207,19 +219,21 @@ export const AuditPage = () => {
                         ) : logs.length > 0 ? (
                            logs.map((log) => (
                               <TableRow key={log.id}>
-                                 <TableCell className="font-medium">
-                                    <div className="flex flex-col"><span>{log.userEmail}</span></div>
+                                 <TableCell className="font-medium max-w-[200px] truncate" title={log.userEmail}>
+                                    <span>{log.userEmail}</span>
                                  </TableCell>
                                  <TableCell>{getActionBadge(log.actionType)}</TableCell>
-                                 <TableCell>{log.changeDetail || log.recordDisplay || "N/A"}</TableCell>
+                                 <TableCell className="max-w-[400px] whitespace-normal break-words">
+                                    {log.changeDetail || log.recordDisplay || "N/A"}
+                                 </TableCell>
                                  <TableCell>{getModuleName(log.module)}</TableCell>
-                                 <TableCell>{new Date(log.createdAtLocal).toLocaleString()}</TableCell>
+                                 <TableCell className="whitespace-nowrap">{new Date(log.createdAtLocal).toLocaleString()}</TableCell>
                                  <TableCell>{getStatusBadge(log.status)}</TableCell>
                               </TableRow>
                            ))
                         ) : (
                            <TableRow>
-                              <TableCell colSpan={5} className="h-24 text-center">
+                              <TableCell colSpan={6} className="h-24 text-center">
                                  No se encontraron resultados.
                               </TableCell>
                            </TableRow>

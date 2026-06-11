@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-    Menu, X, Phone, Mail, MapPin,
-    Stethoscope, FlaskConical, Percent, Activity, Heart,
-    Clock, Shield, Star, ArrowRight, CheckCircle2
-} from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin, Stethoscope, Percent, Activity, Heart, Clock, Shield, Star, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";

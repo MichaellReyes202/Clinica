@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { RouterProvider } from "react-router"
 import { appRouter } from "./app.router"
 import { Toaster } from 'sonner';
-import { type PropsWithChildren } from 'react';
+import { useEffect, type PropsWithChildren } from 'react';
 import { useThemeStore } from './store/theme.store';
 import { useAuthStore } from './auth/store/auth.store';
 import { CustomFullScreenLoading } from './admin/components/CustomFullScreenLoading';
@@ -12,15 +12,25 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 
 const CheckAuthProvider = ({ children }: PropsWithChildren) => {
 
-  const { checkAuthStatus } = useAuthStore();
+  const { checkAuthStatus, authStatus } = useAuthStore();
+  const hasToken = !!localStorage.getItem("token");
+
   const { isLoading } = useQuery({
     queryKey: ['auth'],
     queryFn: checkAuthStatus,
+    enabled: hasToken,
     retry: false,
     refetchInterval: 1000 * 60 * 5,
     refetchOnWindowFocus: false
   });
-  if (isLoading) return <CustomFullScreenLoading />
+
+  useEffect(() => {
+    if (!hasToken && authStatus === 'checking') {
+      useAuthStore.setState({ authStatus: 'not-authenticated', user: null, token: null });
+    }
+  }, [hasToken, authStatus]);
+
+  if (hasToken && isLoading) return <CustomFullScreenLoading />
   return children;
 }
 

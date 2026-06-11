@@ -4,6 +4,10 @@ import axios, { isAxiosError } from "axios";
 
 const clinicaApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    // Esta cabecera le dice a Microsoft que ignore la pantalla de advertencia
+    "X-Tunnel-Skip-AntiPhishing-Page": "true"
+  }
 });
 
 // TODO: agregar la parte de los interceptores
