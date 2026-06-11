@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useNavigate, Navigate } from "react-router";
-import { KeyRound, ShieldCheck, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { useNavigate } from "react-router";
+import { KeyRound, ShieldCheck, ArrowRight, Loader2 } from "lucide-react";
 import { changePasswordAction } from "../actions/changePassword.action";
 import { useAuthStore } from "../store/auth.store";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 const formSchema = z.object({
@@ -63,7 +63,19 @@ export const ForceChangePasswordPage = () => {
       toast.success("¡Contraseña actualizada exitosamente!");
       navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error al actualizar la contraseña");
+      console.error("Change password error details:", error);
+      const validationErrors = error.validationErrors || error.response?.data?.validationErrors;
+      const description = error.message || error.response?.data?.description;
+
+      if (validationErrors && validationErrors.length > 0) {
+        validationErrors.forEach((valError: any) => {
+          toast.error(valError.errorMessage);
+        });
+      } else if (description) {
+        toast.error(description);
+      } else {
+        toast.error("Error al actualizar la contraseña");
+      }
     } finally {
       setIsLoading(false);
     }

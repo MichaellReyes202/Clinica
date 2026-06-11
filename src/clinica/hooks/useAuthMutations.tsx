@@ -15,7 +15,7 @@ export const useResetPasswordMutation = () => {
 
 
 export const useAuthMutation = (
-  onSuccessAction?: () => void, setError?: UseFormSetError<LoginFormValues>, onErrorMessage?: (value: string) => void) => {
+  onSuccessAction?: (data: any) => void, setError?: UseFormSetError<LoginFormValues>, onErrorMessage?: (value: string) => void) => {
 
   const { setCredentials } = useAuthStore();
 
@@ -24,7 +24,7 @@ export const useAuthMutation = (
     onSuccess: (data) => {
       setCredentials(data.user, data.token);
       if (onSuccessAction) {
-        onSuccessAction();
+        onSuccessAction(data);
       }
     },
     onError: (error) => {

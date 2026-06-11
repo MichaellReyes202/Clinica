@@ -97,7 +97,13 @@ export const LoginPage = () => {
   });
 
   const { mutate, isPending } = useAuthMutation(
-    () => navigate("/dashboard", { replace: true }),
+    (data) => {
+      if (data.user?.requiresPasswordChange) {
+        navigate("/auth/change-password", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    },
     setError,
     (val) => toast(val, { duration: 6000 })
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect, type Dispatch, type SetStateAction } from "react"
-import { Plus, Search, CheckCircle, Loader, Eye, EyeOff, Check } from "lucide-react"
+import { Plus, Search, CheckCircle, Loader, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -43,7 +43,6 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [countdown, setCountdown] = useState(5);
     const [startCountdown, setStartCountdown] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
 
     const resetForm = () => {
         setSelectedEmployee(null);
@@ -66,7 +65,6 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
                 setShowSuccessModal(true);
                 toast.success("Usuario creado correctamente!");
                 setIsModalOpen(false);
-                resetForm();
             },
             onError: (error) => {
                 console.log(error)
@@ -79,6 +77,14 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
     const filteredAvailableEmployees = (availableEmployees?.employeeListSearchDto || []);
     const isFormComplete = selectedEmployee && selectedRoleId;
 
+    const handleCloseSuccess = () => {
+        setShowSuccessModal(false);
+        setUserCreatedData(null);
+        setStartCountdown(false);
+        setCountdown(5);
+        resetForm();
+    };
+
     useEffect(() => {
         if (startCountdown && countdown > 0) {
             const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -89,6 +95,7 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
             setUserCreatedData(null);
             setCountdown(5);
             setStartCountdown(false);
+            resetForm();
         }
     }, [startCountdown, countdown]);
 
@@ -183,44 +190,30 @@ export function CreateUserModal({ isModalOpen, setIsModalOpen, availableRoles, c
 
             <Dialog open={showSuccessModal} onOpenChange={(open) => {
                 if (!open) {
-                    setStartCountdown(false);
-                    setCountdown(5);
+                    handleCloseSuccess();
                 }
                 setShowSuccessModal(open);
             }}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle><Check /> Usuario Creado Exitosamente</DialogTitle>
-                        <DialogDescription>Estos son los datos de acceso generados automáticamente:</DialogDescription>
+                <DialogContent className="max-w-md p-6 flex flex-col items-center">
+                    <DialogHeader className="flex flex-col items-center gap-2">
+                        {/* Círculo verde grande estilo SweetAlert */}
+                        <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center border border-emerald-200 dark:border-emerald-900/50 shadow-xs mb-2">
+                            <Check className="h-9 w-9 stroke-[3]" />
+                        </div>
+                        <DialogTitle className="text-xl font-bold text-foreground text-center">
+                            ¡Usuario Creado con Éxito!
+                        </DialogTitle>
+                        <DialogDescription className="text-sm text-muted-foreground mt-2 max-w-xs leading-relaxed text-center">
+                            El usuario ha sido creado correctamente. Las credenciales de acceso se han enviado a la dirección de correo personal de <strong className="text-foreground">{selectedEmployee?.fullName || "este usuario"}</strong> ({userCreatedData?.email || ""}).
+                        </DialogDescription>
                     </DialogHeader>
 
-                    {userCreatedData && (
-                        <div className="space-y-4 mt-4">
-                            <div>
-                                <Label>Email</Label>
-                                <Input type="text" value={userCreatedData.email} readOnly />
-                            </div>
-                            <div>
-                                <Label>Contraseña</Label>
-                                <div className="relative">
-                                    <Input type={showPassword ? "text" : "password"} value={userCreatedData.password} readOnly className="pr-10" />
-                                    <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700">
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {startCountdown ? (
-                                <div className="text-sm text-center text-muted-foreground mt-3">
-                                    Cerrando en <span className="font-semibold">{countdown}</span> segundos...
-                                </div>
-                            ) : (
-                                <Button className="w-full mt-3" variant="secondary" onClick={() => setStartCountdown(true)}>
-                                    Cerrar
-                                </Button>
-                            )}
-                        </div>
-                    )}
+                    <Button 
+                        className="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs cursor-pointer"
+                        onClick={handleCloseSuccess}
+                    >
+                        Aceptar
+                    </Button>
                 </DialogContent>
             </Dialog>
         </>

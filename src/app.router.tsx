@@ -36,6 +36,7 @@ import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsul
 import { ForceChangePasswordPage } from "./auth/pages/ForceChangePasswordPage";
 import { ResetPasswordPage } from "./auth/pages/ResetPasswordPage";
 import { UserProfilePage } from "./admin/pages/profile/UserProfilePage";
+import { NoAccessPage } from "./auth/pages/NoAccessPage";
 
 export const appRouter = createBrowserRouter([
   // 1. Rutas Públicas (Landing Page)
@@ -80,11 +81,17 @@ export const appRouter = createBrowserRouter([
     element: <ForceChangePasswordPage />
   },
 
+  // 2.6 Ruta para cuando no se tiene acceso a ninguna vista
+  {
+    path: '/auth/no-access',
+    element: <NoAccessPage />
+  },
+
   // 3. Rutas Privadas (Dashboard / Admin)
   {
     path: '/dashboard',
     element: (
-      <PermissionProtectedRoute requiredPermission="Dashboard">
+      <PermissionProtectedRoute requiredPermission="DashboardLayout">
         <AdminLayout />
       </PermissionProtectedRoute>
     ),
@@ -92,7 +99,11 @@ export const appRouter = createBrowserRouter([
       // --- Home del Dashboard ---
       {
         index: true,
-        element: <DashboardPage />
+        element: (
+          <PermissionProtectedRoute requiredPermission="Dashboard">
+            <DashboardPage />
+          </PermissionProtectedRoute>
+        )
       },
 
       // --- Perfil del usuario ---
@@ -104,7 +115,11 @@ export const appRouter = createBrowserRouter([
       // --- Gestión de Pacientes ---
       {
         path: 'patients/search',
-        element: <SearchPatients />
+        element: (
+          <PermissionProtectedRoute requiredPermission="Pacientes - Buscar">
+            <SearchPatients />
+          </PermissionProtectedRoute>
+        )
       },
       {
         path: 'patients/register/new',
@@ -150,7 +165,11 @@ export const appRouter = createBrowserRouter([
       },
       {
         path: 'appointments/availability',
-        element: <DoctorAvailabilityPage />
+        element: (
+          <PermissionProtectedRoute requiredPermission="Citas - Disponibilidad">
+            <DoctorAvailabilityPage />
+          </PermissionProtectedRoute>
+        )
       },
 
       // --- Consultas Médicas (Flujo de Trabajo) ---
