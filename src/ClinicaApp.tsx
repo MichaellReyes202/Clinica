@@ -30,6 +30,16 @@ const CheckAuthProvider = ({ children }: PropsWithChildren) => {
     }
   }, [hasToken, authStatus]);
 
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token' && !e.newValue) {
+        useAuthStore.getState().logout();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   if (hasToken && isLoading) return <CustomFullScreenLoading />
   return children;
 }

@@ -463,20 +463,10 @@ export function PermissionsPage() {
       {/* Barra de Herramientas de Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-3.5 rounded-2xl border border-border shadow-2xs">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleToggleAllSections(true)}
-            className="h-8.5 rounded-lg text-foreground/85 text-xs font-semibold"
-          >
+          <Button variant="outline" size="sm" onClick={() => handleToggleAllSections(true)} className="h-8.5 rounded-lg text-foreground/85 text-xs font-semibold">
             Expandir todo
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleToggleAllSections(false)}
-            className="h-8.5 rounded-lg text-foreground/85 text-xs font-semibold"
-          >
+          <Button variant="outline" size="sm" onClick={() => handleToggleAllSections(false)} className="h-8.5 rounded-lg text-foreground/85 text-xs font-semibold">
             Contraer todo
           </Button>
         </div>

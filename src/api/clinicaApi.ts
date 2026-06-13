@@ -25,14 +25,26 @@ clinicaApi.interceptors.request.use((config) => {
 clinicaApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (isAxiosError(error) && error.response) {
-      const { data, status } = error.response;
-
-      const backendError = new BackendError(data as ApiErrorResponse, status);
-
-      handleHttpError(backendError);
-
-      return Promise.reject(backendError);
+    if (isAxiosError(error)) {
+      if (error.response) {
+        const { data, status } = error.response;
+        const backendError = new BackendError(data as ApiErrorResponse, status);
+        handleHttpError(backendError);
+        return Promise.reject(backendError);
+      } else if (error.request) {
+        // Petición hecha, pero no hubo respuesta (Error de red, Timeout, CORS)
+        const networkError = new BackendError(
+          {
+            code: "ServiceUnavailable",
+            description: "No se pudo conectar con el servidor. Revisa tu conexión a internet o intenta de nuevo.",
+            field: null,
+            metadata: null,
+            validationErrors: null,
+          },
+          503
+        );
+        return Promise.reject(networkError);
+      }
     }
     return Promise.reject(error);
   },

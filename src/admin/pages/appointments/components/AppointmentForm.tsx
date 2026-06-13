@@ -15,6 +15,8 @@ import type { DoctorBySpecialtyDto, AppointmentResponseDto, AppointmentCreateDto
 import type { OptionDto } from "@/interfaces/OptionDto.response";
 import { useAppointmentMutation } from "@/clinica/hooks/useAppointments";
 import { toast } from "sonner";
+import { useClinicSchedules } from "@/clinica/hooks/useSchedule";
+import type { ClinicScheduleDto } from "@/clinica/actions/schedule.action";
 
 const formatDateForInput = (isoString: string): string => {
   if (!isoString) return "";
@@ -41,7 +43,80 @@ const calculateDuration = (startTime: string, endTime: string): number => {
   return Math.round((end.getTime() - start.getTime()) / 60000);
 };
 
+const validateClinicSchedule = (
+  startTimeStr: string,
+  durationStr: string,
+  schedules: ClinicScheduleDto[] | undefined
+): { isValid: boolean; message?: string; field?: "startTime" | "duration" } => {
+  if (!schedules || schedules.length === 0) {
+    return { isValid: true };
+  }
+
+  const start = new Date(startTimeStr);
+  const duration = parseInt(durationStr, 10);
+  const end = new Date(start.getTime() + duration * 60000);
+
+  const startDay = start.getDay();
+  const startSchedule = schedules.find((s) => s.dayOfWeek === startDay);
+
+  if (!startSchedule || !startSchedule.isOpen) {
+    return {
+      isValid: false,
+      field: "startTime",
+      message: `La clínica está cerrada el día ${startSchedule?.dayName || "seleccionado"}.`,
+    };
+  }
+
+  const startMinutes = start.getHours() * 60 + start.getMinutes();
+  const [openH, openM] = startSchedule.openTime.split(":").map(Number);
+  const [closeH, closeM] = startSchedule.closeTime.split(":").map(Number);
+  const openMinutes = openH * 60 + openM;
+  const closeMinutes = closeH * 60 + closeM;
+
+  if (startMinutes < openMinutes || startMinutes >= closeMinutes) {
+    return {
+      isValid: false,
+      field: "startTime",
+      message: `La hora de inicio debe estar dentro del horario de atención del ${startSchedule.dayName} (${startSchedule.openTime} - ${startSchedule.closeTime}).`,
+    };
+  }
+
+  const endDay = end.getDay();
+  const endSchedule = schedules.find((s) => s.dayOfWeek === endDay);
+
+  if (!endSchedule || !endSchedule.isOpen) {
+    return {
+      isValid: false,
+      field: "duration",
+      message: `La cita termina en un día cerrado (${endSchedule?.dayName || "seleccionado"}).`,
+    };
+  }
+
+  const endMinutes = end.getHours() * 60 + end.getMinutes();
+  const [endCloseH, endCloseM] = endSchedule.closeTime.split(":").map(Number);
+  const endCloseMinutes = endCloseH * 60 + endCloseM;
+
+  if (startDay !== endDay) {
+    return {
+      isValid: false,
+      field: "duration",
+      message: "La cita debe iniciar y terminar el mismo día.",
+    };
+  }
+
+  if (endMinutes > endCloseMinutes) {
+    return {
+      isValid: false,
+      field: "duration",
+      message: `La cita excede la hora de cierre de la clínica (${endSchedule.closeTime}).`,
+    };
+  }
+
+  return { isValid: true };
+};
+
 export const AppointmentForm = ({ mode = "create", initialStart = "", initialEvent, onClose, setIsPosting, doctorBySpecialty, onEventSaved, }: AppointmentFormProps) => {
+  const { data: clinicSchedules } = useClinicSchedules();
   const [doctors, setDoctors] = useState<OptionDto[]>([]);
   const [IsSelectedPatient, setIsSelectedPatient] = useState<boolean>(() => {
     return mode === "edit" && !!initialEvent?.patientId;
@@ -95,6 +170,17 @@ export const AppointmentForm = ({ mode = "create", initialStart = "", initialEve
 
   const onSubmit = (data: AppointmentFormValues): void => {
     clearErrors();
+
+    // Validación dinámica con el horario de la clínica
+    const validation = validateClinicSchedule(data.startTime, data.duration, clinicSchedules);
+    if (!validation.isValid && validation.message && validation.field) {
+      setError(validation.field, {
+        type: "manual",
+        message: validation.message,
+      });
+      return;
+    }
+
     if (mode == "create") {
       const payload: AppointmentCreateDto = {
         patientId: parseInt(data.patientId),
