@@ -36,6 +36,7 @@ import { ActiveConsultationPage } from "./admin/pages/consultations/ActiveConsul
 import { ForceChangePasswordPage } from "./auth/pages/ForceChangePasswordPage";
 import { ResetPasswordPage } from "./auth/pages/ResetPasswordPage";
 import { UserProfilePage } from "./admin/pages/profile/UserProfilePage";
+import ChatPage from "./admin/pages/chat/ChatPage";
 import { NoAccessPage } from "./auth/pages/NoAccessPage";
 
 export const appRouter = createBrowserRouter([
@@ -110,6 +111,12 @@ export const appRouter = createBrowserRouter([
       {
         path: 'profile',
         element: <UserProfilePage />
+      },
+
+      // --- Chatbot Asistente Virtual IA ---
+      {
+        path: 'chat',
+        element: <ChatPage />
       },
 
       // --- Gestión de Pacientes ---

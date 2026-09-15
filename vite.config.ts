@@ -9,10 +9,6 @@ export default defineConfig({
     allowedHosts: true,
     // Permite que la app se exponga a la red
     host: true,
-    // Arregla el problema de los websockets en túneles HTTPS
-    hmr: {
-      clientPort: 443
-    }
   },
   resolve: {
     alias: {

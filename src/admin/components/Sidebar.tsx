@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   ChevronLeft,
+  Bot,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Link, useLocation } from "react-router"
@@ -247,6 +248,21 @@ export const Sidebar = ({ isCollapsed, toggleCollapse }: SidebarProps) => {
               </div>
             ))}
           </nav>
+
+          <div className="p-2 border-t border-sidebar-border mt-auto shrink-0">
+            <Link
+              to="/dashboard/chat"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors font-medium",
+                pathname === "/dashboard/chat" && "bg-sidebar-primary text-sidebar-primary-foreground",
+                isCollapsed && "justify-center px-2"
+              )}
+              title={isCollapsed ? "Asistente IA" : undefined}
+            >
+              <Bot className="h-5 w-5 shrink-0" />
+              {!isCollapsed && <span className="text-sm font-medium">Asistente IA</span>}
+            </Link>
+          </div>
         </div>
       </aside>
     </>
