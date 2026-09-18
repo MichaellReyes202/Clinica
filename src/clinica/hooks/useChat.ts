@@ -16,10 +16,7 @@ import type { Options } from "@/interfaces/Paginated.response";
 
 // ── 1. TanStack Queries para Conversaciones y Mensajes ──────────────
 
-export const useChatConversations = (
-  options?: Options,
-  includeArchived: boolean = false
-) =>
+export const useChatConversations = (options?: Options, includeArchived: boolean = false) =>
   useQuery({
     queryKey: ["chat-conversations", options, includeArchived],
     queryFn: () => getConversationsAction(options, includeArchived),

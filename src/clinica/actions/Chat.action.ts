@@ -8,12 +8,8 @@ import type {
 import type { Options, PaginatedResponseDto } from "@/interfaces/Paginated.response";
 
 // REST endpoints usando clinicaApi (Axios)
-export const getConversationsAction = async (
-  options?: Options,
-  includeArchived: boolean = false
-): Promise<PaginatedResponseDto<ChatConversationDto>> => {
-  const { data } = await clinicaApi.get<PaginatedResponseDto<ChatConversationDto>>(
-    "/chat/conversations",
+export const getConversationsAction = async (options?: Options, includeArchived: boolean = false): Promise<PaginatedResponseDto<ChatConversationDto>> => {
+  const { data } = await clinicaApi.get<PaginatedResponseDto<ChatConversationDto>>("/chat/conversations",
     {
       params: {
         limit: options?.limit,

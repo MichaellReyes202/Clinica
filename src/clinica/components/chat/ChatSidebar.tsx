@@ -54,11 +54,7 @@ interface ChatSidebarProps {
   onNewConversation: () => void;
 }
 
-export const ChatSidebar: React.FC<ChatSidebarProps> = ({
-  activeConversationId,
-  onSelectConversation,
-  onNewConversation,
-}) => {
+export const ChatSidebar: React.FC<ChatSidebarProps> = ({ activeConversationId, onSelectConversation, onNewConversation }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
@@ -68,10 +64,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const [deletingConvId, setDeletingConvId] = useState<number | null>(null);
 
   // Queries y Mutations
-  const { data: conversationsData, isLoading } = useChatConversations(
-    { limit: 50, offset: 0, query: searchTerm },
-    showArchived
-  );
+  const { data: conversationsData, isLoading } = useChatConversations({ limit: 50, offset: 0, query: searchTerm }, showArchived);
 
   const renameMutation = useRenameConversation();
   const pinMutation = useTogglePinConversation();
@@ -104,13 +97,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     <aside className="w-full md:w-80 border-r bg-sidebar border-border/60 flex flex-col h-full shrink-0 min-h-0 overflow-hidden select-none">
       {/* Cabecera / Nueva Conversación */}
       <div className="p-4 border-b border-border/60 flex flex-col gap-3 shrink-0">
-        <Button
-          onClick={onNewConversation}
-          className="w-full justify-start gap-2 font-medium shadow-sm"
-          variant="default"
-        >
-          <MessageSquarePlus className="w-4 h-4" />
-          Nueva conversación
+        <Button onClick={onNewConversation} className="w-full justify-start gap-2 font-medium shadow-sm" variant="default">
+          <MessageSquarePlus className="w-4 h-4" /> Nueva conversación
         </Button>
 
         {/* Buscador */}
@@ -171,11 +159,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 <div
                   key={conv.id}
                   onClick={() => onSelectConversation(conv.id)}
-                  className={`group relative flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors text-xs ${
-                    isActive
-                      ? "bg-primary/10 text-primary font-medium border border-primary/20"
-                      : "hover:bg-muted/60 text-foreground/90"
-                  }`}
+                  className={`group relative flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors text-xs ${isActive
+                    ? "bg-primary/10 text-primary font-medium border border-primary/20"
+                    : "hover:bg-muted/60 text-foreground/90"
+                    }`}
                 >
                   <div className="flex items-center gap-2 min-w-0 pr-6">
                     {conv.isPinned && (
@@ -188,11 +175,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   <div className="absolute right-1 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                        >
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
                           <MoreVertical className="w-3.5 h-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -245,11 +228,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
                         <DropdownMenuSeparator />
 
-                        <DropdownMenuItem
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletingConvId(conv.id);
-                          }}
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingConvId(conv.id);
+                        }}
                           className="gap-2 text-destructive focus:text-destructive"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Eliminar
@@ -291,10 +273,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       </Dialog>
 
       {/* Alerta Confirmar Eliminación */}
-      <AlertDialog
-        open={!!deletingConvId}
-        onOpenChange={(open) => !open && setDeletingConvId(null)}
-      >
+      <AlertDialog open={!!deletingConvId} onOpenChange={(open) => !open && setDeletingConvId(null)} >
         <AlertDialogContent className="sm:max-w-[400px]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">¿Eliminar conversación?</AlertDialogTitle>
@@ -305,10 +284,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
             <AlertDialogCancel className="text-xs">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
-            >
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs">
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
