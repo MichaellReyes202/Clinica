@@ -21,10 +21,12 @@ interface Props {
   initialPatient?: PatientFilterResponse | null,
   isPatientSelected: Dispatch<SetStateAction<boolean>>
   disabled?: boolean
+  presentation?: "default" | "workspace"
 }
 
 // En SearchPatient - mejorar la función "Cambiar"
-export const SearchPatient = ({ setValue, initialPatient, isPatientSelected, disabled = false }: Props) => {
+export const SearchPatient = ({ setValue, initialPatient, isPatientSelected, disabled = false, presentation = "default" }: Props) => {
+  const isWorkspace = presentation === "workspace";
   const [query, setQuery] = useState("")
   const [debouncedQuery] = useDebounce(query, 700)
   const [selectedPatient, setSelectedPatient] = useState<PatientFilterResponse | null>(() => {
@@ -53,15 +55,27 @@ export const SearchPatient = ({ setValue, initialPatient, isPatientSelected, dis
   }
 
   return (
-    <div className="border p-4 rounded-md space-y-3">
-      <Label className="text-base font-semibold">Seleccione al Paciente</Label>
+    <div className={isWorkspace ? "space-y-4" : "space-y-3 rounded-md border p-4"}>
+      <Label className={isWorkspace ? "sr-only" : "text-base font-semibold"}>Seleccione al Paciente</Label>
       {selectedPatient ? (
-        <div className="p-3 border-l-4 border-green-500 bg-green-50 rounded-r-md flex justify-between items-center">
-          <span className="flex items-center gap-2 font-semibold text-green-800 text-sm">
-            <CheckCircle className="h-4 w-4" />
-            {selectedPatient.fullName.toUpperCase()}
+        <div className="flex flex-col gap-3 rounded-lg border border-sidebar-primary/20 bg-sidebar-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <span className="flex min-w-0 items-start gap-3">
+            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-sidebar-primary" />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold text-foreground">{selectedPatient.fullName}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {selectedPatient.dni ? `DNI ${selectedPatient.dni}` : "Paciente seleccionado"}
+              </span>
+            </span>
           </span>
-          <Button variant="destructive" size="sm" onClick={handleClearSelection} disabled={disabled}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleClearSelection}
+            disabled={disabled}
+            className={`sm:shrink-0 ${isWorkspace ? "text-foreground dark:border-border dark:bg-background dark:text-foreground dark:hover:bg-muted/50" : ""}`}
+          >
             Cambiar
           </Button>
         </div>
@@ -69,7 +83,14 @@ export const SearchPatient = ({ setValue, initialPatient, isPatientSelected, dis
         <>
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Buscar por Nombre o DNI del paciente" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-10" disabled={disabled} />
+            <Input
+              placeholder="Nombre o DNI del paciente"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="h-11 pl-10"
+              disabled={disabled}
+              aria-label="Buscar paciente por nombre o DNI"
+            />
           </div>
 
           {isLoading ?
@@ -79,25 +100,28 @@ export const SearchPatient = ({ setValue, initialPatient, isPatientSelected, dis
               </div>
             ) :
             (
-              <div className="h-50 overflow-y-auto border rounded-md">
+              <div className={isWorkspace ? "max-h-[420px] min-h-[220px] overflow-y-auto rounded-lg border" : "h-50 overflow-y-auto rounded-md border"}>
                 {filteredAvailablePatients.length === 0 ? (
-                  <p className="p-3 text-sm text-muted-foreground">
+                  <p className="px-4 py-6 text-sm text-muted-foreground">
                     {query ? "No se encontraron pacientes con ese criterio." : "Ingrese un nombre o DNI para buscar pacientes."}
                   </p>
                 ) : (
                   filteredAvailablePatients.slice(0, 10).map((p) => (
-                    <div
+                    <button
                       key={p.id}
-                      className="p-2 border-b cursor-pointer hover:bg-accent flex justify-between items-center text-xs"
+                      type="button"
+                      disabled={disabled}
+                      aria-label={`Seleccionar a ${p.fullName}${p.dni ? `, DNI ${p.dni}` : ""}`}
+                      className="flex min-h-14 w-full items-center justify-between gap-4 border-b px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={() => {
                         setSelectedPatient(p)
                         isPatientSelected(true)
                         setValue("patientId", p.id.toString())
                       }}
                     >
-                      <span className="font-medium text-gray-700">{p.fullName.toUpperCase()}</span>
-                      <Badge variant="outline">{p.dni}</Badge>
-                    </div>
+                      <span className="min-w-0 truncate text-sm font-medium text-foreground">{p.fullName}</span>
+                      {p.dni ? <Badge variant="outline" className="shrink-0 font-normal">DNI {p.dni}</Badge> : <span className="shrink-0 text-xs text-muted-foreground">Sin DNI</span>}
+                    </button>
                   ))
                 )}
               </div>

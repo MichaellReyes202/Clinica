@@ -1,12 +1,11 @@
-import React, { useState, useEffect, Fragment } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { clinicaApi } from "@/api/clinicaApi"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CustomFullScreenLoading } from "@/admin/components/CustomFullScreenLoading"
 import { toast } from "sonner"
-import { Shield, Search, Check, Loader2, ChevronDown, ChevronUp, ChevronRight, Plus, X, Users, AlertCircle, MoreHorizontal, Eye, ChevronsUpDown } from "lucide-react"
+import { Shield, Search, Check, Loader2, ChevronDown, ChevronRight, Plus, X, Users, AlertCircle, MoreHorizontal } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -252,26 +251,6 @@ export function PermissionsPage() {
       }
     })
   }
-
-  // Toggle de permiso para un usuario individual
-  const isUserPermissionActive = (userId: number, viewId: number) => {
-    return (localUserPermissions[userId] || []).includes(viewId)
-  }
-
-  const handleToggleUserPermission = (userId: number, viewId: number, checked: boolean) => {
-    setLocalUserPermissions(prev => {
-      const userPerms = prev[userId] || []
-      const updatedPerms = checked
-        ? [...userPerms, viewId]
-        : userPerms.filter(id => id !== viewId)
-      return {
-        ...prev,
-        [userId]: updatedPerms
-      }
-    })
-  }
-
-
 
   // Expandir / Colapsar secciones
   const toggleSection = (section: string) => {

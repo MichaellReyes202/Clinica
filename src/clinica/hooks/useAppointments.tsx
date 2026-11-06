@@ -1,9 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createAppointmentAction, getAppointmentDetailAction, getAppointments, getDoctorAvailability, getTodayAppointments, updateAppointmentAction, updateAppointmentStatusAction, deleteAppointmentAction } from "../actions/Appointments.action";
 import type { AppointmentCreateDto, AppointmentDetailDto, AppointmentResponseDto, AppointmentUpdateDto, DoctorAvailabilityDto, TodayAppointmentDto, UpdateStatusAppointmenDto } from "@/interfaces/Appointment.response";
-import type { SingularError, ValidationResponse } from "@/interfaces/Error.response";
 import { toast } from "sonner";
-import type { AxiosError } from "axios";
 import type { UseFormSetError } from "react-hook-form";
 import type { AppointmentFormValues } from "@/admin/Validation/AppointmentSchema";
 import { useSearchParams } from "react-router";

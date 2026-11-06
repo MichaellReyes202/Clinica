@@ -1,7 +1,6 @@
 import { clinicaApi } from "@/api/clinicaApi";
 import type { Employee, EmployesFilterResponse, EmployesResponse } from "@/interfaces/Employes.response";
 import type { Options } from "@/interfaces/Paginated.response";
-import { isAxiosError } from "axios";
 
 export const getEmployeeAction = async (options: Options = {}): Promise<EmployesResponse> => {
   const { limit, offset, query } = options;
@@ -18,6 +17,11 @@ export const getEmployeeDetail = async (employeeId: number): Promise<Employee> =
   return {
     ...data,
   };
+};
+
+export const getMyEmployeeDetail = async (): Promise<Employee> => {
+  const { data } = await clinicaApi.get<Employee>("/employees/me");
+  return data;
 };
 
 export const getFilteredEmployees = async (options: Options = {}): Promise<EmployesFilterResponse> => {

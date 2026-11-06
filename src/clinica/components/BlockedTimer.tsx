@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export const BlockedTimer = () => {
   const getTimeLeft = useAuthStore((state) => state.getTimeLeft);
   const clearBlocked = useAuthStore((state) => state.clearBlocked);
-  const [tick, setTick] = useState(0);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {

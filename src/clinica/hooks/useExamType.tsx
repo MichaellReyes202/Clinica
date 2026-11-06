@@ -8,8 +8,6 @@ import type { ExamsBySpecialtyListDto, ExamType, ExamTypeCreateDto, ExamTypeList
 import type { PaginatedResponseDto } from "@/interfaces/Paginated.response";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { SingularError, ValidationResponse } from "@/interfaces/Error.response";
-import type { AxiosError } from "axios";
 import type { UseFormSetError } from "react-hook-form";
 import type { ExamTypeFormValues } from "@/admin/Validation/ExamTypeSchema";
 import { handleMutationError } from "@/utils/handleMutationError";

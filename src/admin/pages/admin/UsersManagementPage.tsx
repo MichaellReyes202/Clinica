@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, Fragment } from "react"
+import { useState, useEffect, useMemo, Fragment } from "react"
 import { useSearchParams } from "react-router"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { clinicaApi } from "@/api/clinicaApi"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import {
   Search, Edit, KeyRound, Shield, Users, Loader2,
-  ChevronDown, ChevronRight, Check, AlertCircle, Eye, X
+  ChevronRight, Check, AlertCircle, Eye, X
 } from "lucide-react"
 import { useDebounce } from "use-debounce"
 import { toast } from "sonner"
@@ -69,9 +69,7 @@ interface RoleDto {
 
 // ─── Page Component ──────────────────────────────────────────────
 export default function UsersManagementPage() {
-  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
-  const page = searchParams.get("page") || "1"
   const queryParam = searchParams.get("query") || ""
 
   // Search / Filter state

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useNavigate, useSearchParams } from "react-router";
-import { KeyRound, Mail, ArrowRight, Loader2, Eye, EyeOff, Hash } from "lucide-react";
+import { KeyRound, Mail, ArrowRight, Loader2, Hash } from "lucide-react";
 import { resetPasswordWithCodeAction } from "../actions/login.action";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

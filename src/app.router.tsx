@@ -183,7 +183,7 @@ export const appRouter = createBrowserRouter([
       {
         path: 'consultations/process/:appointmentId',
         element: (
-          <PermissionProtectedRoute requiredPermission="Consultas - Activa">
+          <PermissionProtectedRoute requiredAnyPermission={["Consultas - Activa", "Consultas - Crear", "Citas - Hoy"]}>
             <ActiveConsultationPage />
           </PermissionProtectedRoute>
         )

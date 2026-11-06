@@ -43,5 +43,7 @@ export interface StreamChatOptions {
   onChunk: (chunk: string) => void;
   onDone?: () => void;
   onError?: (error: Error) => void;
+  onAbort?: () => void;
+  onConversationId?: (id: number) => void;
   signal?: AbortSignal;
 }

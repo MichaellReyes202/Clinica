@@ -21,10 +21,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        160
-      )}px`;
+      const nextHeight = Math.min(textareaRef.current.scrollHeight, 160);
+      textareaRef.current.style.height = `${nextHeight}px`;
+      textareaRef.current.style.overflowY = textareaRef.current.scrollHeight > 160 ? "auto" : "hidden";
     }
   }, [inputMessage]);
 
@@ -54,15 +53,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="shrink-0 p-3 md:p-4 border-t border-border/60 bg-background/95 backdrop-blur-xs select-none">
-      <div className="max-w-4xl mx-auto flex items-end gap-2 bg-muted/50 rounded-2xl p-2 border border-border/60 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+    <div className="shrink-0 border-t border-border/60 bg-background/90 px-3 py-3 backdrop-blur md:px-6 md:py-4">
+      <div className="mx-auto flex max-w-4xl items-end gap-2 rounded-xl border border-border bg-card p-2 transition-colors focus-within:border-sidebar-primary/50 focus-within:ring-2 focus-within:ring-sidebar-primary/10">
         <Textarea
           ref={textareaRef}
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Escribe una pregunta sobre citas, pacientes, consultas u horarios..."
-          className="flex-1 min-h-[40px] max-h-[160px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-xs resize-none py-2.5 px-3"
+          maxLength={4000}
+          placeholder="Pregunta por citas, pacientes u horarios…"
+          aria-label="Escribe tu pregunta para el asistente clínico"
+          className="min-h-[44px] max-h-[160px] flex-1 resize-none border-0 bg-transparent px-3 py-3 text-sm leading-6 focus-visible:ring-0 focus-visible:ring-offset-0"
           rows={1}
         />
 
@@ -71,8 +72,9 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             type="button"
             size="icon"
             onClick={onCancelStream}
-            className="h-9 w-9 rounded-xl shrink-0 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="h-11 w-11 shrink-0 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
             title="Detener respuesta"
+            aria-label="Detener respuesta"
           >
             <Square className="w-4 h-4 fill-current" />
           </Button>
@@ -82,15 +84,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             size="icon"
             onClick={handleSend}
             disabled={!inputMessage.trim()}
-            className="h-9 w-9 rounded-xl shrink-0 shadow-xs"
+            className="h-11 w-11 shrink-0 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary/90"
             title="Enviar mensaje"
+            aria-label="Enviar mensaje"
           >
             <SendHorizontal className="w-4 h-4" />
           </Button>
         )}
       </div>
-      <div className="text-[10px] text-center text-muted-foreground mt-2">
-        El asistente puede cometer errores. Verifica la información clínica importante.
+      <div className="mx-auto mt-2 max-w-4xl px-1 text-[11px] leading-5 text-muted-foreground">
+        El asistente consulta solo la información habilitada para tu usuario. Confirma los datos antes de actuar.
       </div>
     </div>
   );

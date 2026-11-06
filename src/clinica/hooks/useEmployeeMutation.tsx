@@ -1,7 +1,5 @@
 import type { EmployeeCreationDto, EmployeeUpdateDto } from "@/interfaces/Employes.response";
-import type { SingularError, ValidationResponse } from "@/interfaces/Error.response";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
 import { createEmployeeAction, updateEmployeeAction } from "../actions/Employee.action";
 import { toast } from "sonner";
 import type { UseFormSetError } from "react-hook-form";

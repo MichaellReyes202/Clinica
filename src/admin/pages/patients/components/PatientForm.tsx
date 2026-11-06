@@ -21,7 +21,7 @@ export interface PatientFormProps {
 
 export const PatientForm = ({ initialPatient, sexoOptions, bloodTypeOptions, onSuccess }: PatientFormProps) => {
 
-  const { handleSubmit, register, setValue, watch, formState: { errors }, reset, setError, clearErrors } = useForm<PatientFormValue>({
+  const { handleSubmit, register, setValue, watch, formState: { errors }, setError, clearErrors } = useForm<PatientFormValue>({
     resolver: zodResolver(PatientSchema),
     defaultValues: {
       id: initialPatient.id || 0,

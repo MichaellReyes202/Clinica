@@ -3,8 +3,6 @@ import { createPositionAction, getPositionDetail, getPositionOption, getPosition
 import { useSearchParams } from "react-router"
 import type { PositionCreation, PositionUpdate } from "@/interfaces/Positions.response"
 import type { AxiosError } from "axios"
-import type { SingularError, ValidationResponse } from "@/interfaces/Error.response"
-import type { SpecialtiesFormValues } from "@/admin/Validation/SpecialtiesSchema"
 import { toast } from "sonner"
 import type { UseFormSetError } from "react-hook-form"
 import type { PositionFormValues } from "@/admin/Validation/PositionSchema"

@@ -7,10 +7,8 @@ import { useEmployeeDetail } from "@/clinica/hooks/useEmployeeDetail";
 import { useClinicSchedules } from "@/clinica/hooks/useSchedule";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -37,13 +35,6 @@ const passwordSchema = z
 type PasswordForm = z.infer<typeof passwordSchema>;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-const ROLE_COLORS: Record<string, string> = {
-  Admin: "bg-red-100 text-red-700 border-red-200",
-  Doctor: "bg-blue-100 text-blue-700 border-blue-200",
-  Recepcionista: "bg-purple-100 text-purple-700 border-purple-200",
-  Gerente: "bg-amber-100 text-amber-700 border-amber-200",
-};
 
 const DAY_LABELS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
@@ -96,7 +87,8 @@ const StatCard = ({
 export const UserProfilePage = () => {
   const { user } = useAuthStore();
   const { employee, isLoading: loadingEmployee } = useEmployeeDetail(
-    user?.employeeId ?? null
+    user?.employeeId ?? null,
+    true
   );
   const { data: clinicSchedules } = useClinicSchedules();
   const [changingPassword, setChangingPassword] = useState(false);
@@ -137,9 +129,6 @@ export const UserProfilePage = () => {
     .map((n) => n[0])
     .join("")
     .toUpperCase();
-
-  const roleClass =
-    ROLE_COLORS[user?.roles?.[0] ?? ""] ?? "bg-gray-100 text-gray-700 border-gray-200";
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">

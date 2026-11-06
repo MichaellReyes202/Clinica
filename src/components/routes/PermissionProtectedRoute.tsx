@@ -2,7 +2,8 @@ import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "@/auth/store/auth.store";
 
 interface Props {
-  requiredPermission: string;
+  requiredPermission?: string;
+  requiredAnyPermission?: string[];
   children?: React.ReactNode;
 }
 
@@ -43,7 +44,7 @@ export const getFirstAvailableRoute = (permissions: string[]): string => {
   return "/auth/no-access";
 };
 
-export const PermissionProtectedRoute = ({ requiredPermission, children }: Props) => {
+export const PermissionProtectedRoute = ({ requiredPermission, requiredAnyPermission, children }: Props) => {
   const authStatus = useAuthStore(state => state.authStatus);
   const hasPermission = useAuthStore(state => state.hasPermission);
   const user = useAuthStore(state => state.user);
@@ -86,7 +87,11 @@ export const PermissionProtectedRoute = ({ requiredPermission, children }: Props
   }
 
   // Si entra a una sección específica para la que no tiene permisos
-  if (requiredPermission && requiredPermission !== "DashboardLayout" && !hasPermission(requiredPermission)) {
+  const hasRoutePermission = requiredAnyPermission
+    ? requiredAnyPermission.some(permission => hasPermission(permission))
+    : !requiredPermission || hasPermission(requiredPermission);
+
+  if (!hasRoutePermission) {
     const targetPath = hasPermission("Dashboard") ? "/dashboard" : getFirstAvailableRoute(userViews);
     return <Navigate to={targetPath} replace />;
   }

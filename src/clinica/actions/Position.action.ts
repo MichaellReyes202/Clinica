@@ -3,7 +3,6 @@ import type { OptionDto } from "@/interfaces/OptionDto.response";
 
 import type { PositionCreation, PositionListDto, PositionUpdate } from "@/interfaces/Positions.response";
 import type { Options, PaginatedResponseDto } from "@/interfaces/Paginated.response";
-import { isAxiosError } from "axios";
 
 // Traer los cargos como una lista de opciones
 export const getPositionOption = async (): Promise<OptionDto[]> => {

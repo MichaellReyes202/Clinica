@@ -1,8 +1,25 @@
 import { clinicaApi } from "@/api/clinicaApi";
 import type { ConsultationDetailDto, FinishConsultationDto, StartConsultationDto } from "@/interfaces/Consultation.response";
 
-export const startConsultationAction = async (dto: StartConsultationDto): Promise<{ consultationId: number }> => {
-  const { data } = await clinicaApi.post<{ consultationId: number }>("/Consultation/start", dto);
+export const startConsultationAction = async (dto: StartConsultationDto): Promise<number> => {
+  const { data } = await clinicaApi.post<number>("/Consultation/start", dto);
+  return data;
+};
+
+export interface StartWalkInConsultationRequest {
+  patientId: number;
+  employeeId: number;
+}
+
+export interface StartWalkInConsultationResponse {
+  appointmentId: number;
+  consultationId: number;
+}
+
+export const startWalkInConsultationAction = async (
+  dto: StartWalkInConsultationRequest
+): Promise<StartWalkInConsultationResponse> => {
+  const { data } = await clinicaApi.post<StartWalkInConsultationResponse>("/Consultation/start-walk-in", dto);
   return data;
 };
 

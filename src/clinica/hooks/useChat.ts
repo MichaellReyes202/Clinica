@@ -93,7 +93,6 @@ export const useDeleteConversation = () => {
 };
 
 export const useSendChatFeedback = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: ChatFeedbackDto) => sendChatFeedbackAction(dto),
     onSuccess: () => {
@@ -110,7 +109,11 @@ export const useSendChatFeedback = () => {
 export interface UseChatStreamReturn {
   isStreaming: boolean;
   streamingText: string;
-  sendMessageStream: (conversationId: number | null, message: string) => Promise<void>;
+  sendMessageStream: (
+    conversationId: number | null,
+    message: string,
+    onConversationId: (id: number) => void,
+  ) => Promise<void>;
   cancelStream: () => void;
 }
 
@@ -118,15 +121,26 @@ export const useChatStream = (): UseChatStreamReturn => {
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [streamingText, setStreamingText] = useState<string>("");
   const abortControllerRef = useRef<AbortController | null>(null);
+  const streamConversationIdRef = useRef<number | null>(null);
   const queryClient = useQueryClient();
 
+  const refreshConversation = useCallback((conversationId: number | null) => {
+    queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+    if (conversationId && conversationId > 0) {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversation-detail", conversationId] });
+    }
+  }, [queryClient]);
+
   const cancelStream = useCallback(() => {
+    const conversationId = streamConversationIdRef.current;
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
     setIsStreaming(false);
-  }, []);
+    setStreamingText("");
+    refreshConversation(conversationId);
+  }, [refreshConversation]);
 
   useEffect(() => {
     return () => {
@@ -138,7 +152,11 @@ export const useChatStream = (): UseChatStreamReturn => {
   }, []);
 
   const sendMessageStream = useCallback(
-    async (conversationId: number | null, message: string) => {
+    async (
+      conversationId: number | null,
+      message: string,
+      onConversationId: (id: number) => void,
+    ) => {
       // Regla 6: Si hay un stream activo, abortar la petición anterior antes de iniciar la nueva
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -146,6 +164,7 @@ export const useChatStream = (): UseChatStreamReturn => {
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      streamConversationIdRef.current = conversationId;
 
       setIsStreaming(true);
       setStreamingText("");
@@ -154,31 +173,33 @@ export const useChatStream = (): UseChatStreamReturn => {
         conversationId,
         message,
         signal: controller.signal,
+        onConversationId: (id) => {
+          streamConversationIdRef.current = id;
+          onConversationId(id);
+        },
         onChunk: (chunk: string) => {
+          if (abortControllerRef.current !== controller) return;
           setStreamingText((prev) => prev + chunk);
         },
         onDone: () => {
+          if (abortControllerRef.current !== controller) return;
           setIsStreaming(false);
           setStreamingText("");
           abortControllerRef.current = null;
-
-          // Regla 3: Invalidar queries de TanStack Query al terminar el stream
-          queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
-          if (conversationId && conversationId > 0) {
-            queryClient.invalidateQueries({
-              queryKey: ["chat-conversation-detail", conversationId],
-            });
-          }
+          refreshConversation(streamConversationIdRef.current);
         },
         onError: (err: Error) => {
+          if (abortControllerRef.current !== controller) return;
           setIsStreaming(false);
           setStreamingText("");
           abortControllerRef.current = null;
+          refreshConversation(streamConversationIdRef.current);
           toast.error(err.message || "Error durante la generación de respuesta.");
         },
+        onAbort: () => refreshConversation(streamConversationIdRef.current),
       });
     },
-    [queryClient]
+    [refreshConversation]
   );
 
   return {

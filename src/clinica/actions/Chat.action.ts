@@ -63,11 +63,14 @@ export const streamChatMessageAction = async ({
   onChunk,
   onDone,
   onError,
+  onAbort,
+  onConversationId,
   signal,
 }: StreamChatOptions): Promise<void> => {
   const token = localStorage.getItem("token");
   const baseUrl = import.meta.env.VITE_API_URL || "";
   const url = `${baseUrl}/chat/stream`;
+  let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
 
   try {
     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -100,84 +103,82 @@ export const streamChatMessageAction = async ({
       throw new Error("El cuerpo de la respuesta no admite streaming.");
     }
 
-    const reader = response.body.getReader();
+    reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
-
-    // CRÍTICO (Regla 5): Buffer de texto acumulado para eventos SSE cortados por la mitad por la red
     let buffer = "";
+    let isDone = false;
+
+    const dispatchEvent = (rawEvent: string) => {
+      const data = rawEvent
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => line.slice(5).trimStart())
+        .join("\n");
+
+      if (!data) return;
+      if (data === "[DONE]") {
+        isDone = true;
+        return;
+      }
+
+      const event = JSON.parse(data) as {
+        type?: string;
+        content?: string;
+        message?: string;
+        conversationId?: number;
+      };
+
+      switch (event.type) {
+        case "conversation":
+          if (typeof event.conversationId === "number") {
+            onConversationId?.(event.conversationId);
+          }
+          break;
+        case "chunk":
+          if (typeof event.content === "string") onChunk(event.content);
+          break;
+        case "error":
+          throw new Error(event.message || "No se pudo completar la respuesta.");
+        case "done":
+          isDone = true;
+          break;
+        default:
+          throw new Error("El servidor envió un evento de chat no reconocido.");
+      }
+    };
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        buffer += decoder.decode();
+        break;
+      }
 
       buffer += decoder.decode(value, { stream: true });
-
-      // Eventos SSE delimitados por doble salto de línea (\n\n o \r\n\r\n)
       const parts = buffer.split(/\r?\n\r?\n/);
-
-      // Conservar el último elemento como el buffer incompleto para la siguiente iteración
       buffer = parts.pop() || "";
 
       for (const part of parts) {
-        const lines = part.split(/\r?\n/);
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const dataContent = line.slice(6);
-            if (dataContent === "[DONE]") {
-              onDone?.();
-              return;
-            }
-            if (dataContent.startsWith('{"error":')) {
-              try {
-                const parsed = JSON.parse(dataContent);
-                if (parsed.error) {
-                  throw new Error(parsed.error);
-                }
-              } catch (err) {
-                if (err instanceof Error) throw err;
-              }
-            }
-            // Reemplazar saltos de línea escapados (\\n) por saltos reales (\n)
-            const unescapedChunk = dataContent.replace(/\\n/g, "\n");
-            onChunk(unescapedChunk);
-          }
-        }
+        dispatchEvent(part);
+        if (isDone) break;
       }
+      if (isDone) break;
     }
 
-    // Procesar fragmento restante al terminar la lectura del stream
-    if (buffer.trim()) {
-      const lines = buffer.split(/\r?\n/);
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          const dataContent = line.slice(6);
-          if (dataContent === "[DONE]") {
-            onDone?.();
-            return;
-          }
-          if (dataContent.startsWith('{"error":')) {
-            try {
-              const parsed = JSON.parse(dataContent);
-              if (parsed.error) {
-                throw new Error(parsed.error);
-              }
-            } catch (err) {
-              if (err instanceof Error) throw err;
-            }
-          }
-          const unescapedChunk = dataContent.replace(/\\n/g, "\n");
-          onChunk(unescapedChunk);
-        }
-      }
+    if (buffer.trim()) dispatchEvent(buffer);
+    if (!isDone) {
+      throw new Error("La conexión se cerró antes de terminar la respuesta.");
     }
 
     onDone?.();
   } catch (error: unknown) {
     if (signal?.aborted) {
-      // Stream cancelado intencionalmente por AbortController
+      onAbort?.();
       return;
     }
     const err = error instanceof Error ? error : new Error(String(error));
     onError?.(err);
+  } finally {
+    reader?.releaseLock();
   }
 };

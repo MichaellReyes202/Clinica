@@ -188,7 +188,7 @@ const ClinicScheduleSection = () => {
 
 // ── Sección: Horario por doctor ───────────────────────────────────────────────
 
-const EmployeeScheduleSection = () => {
+export const EmployeeScheduleSection = () => {
   const { data: employees = [], isLoading } = useAllEmployees();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [editingDay, setEditingDay] = useState<{ dayOfWeek: number; existing?: EmployeeScheduleDto } | null>(null);
@@ -203,7 +203,6 @@ const EmployeeScheduleSection = () => {
   const handleEmployeeChange = (val: string) => {
     const id = parseInt(val);
     setSelectedId(id);
-    const emp = employees.find((e) => e.id === id);
     setDuration("30"); // reset — se podría cargar del empleado si se expone en el DTO
   };
 

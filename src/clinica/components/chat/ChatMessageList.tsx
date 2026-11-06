@@ -1,17 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import {
-  Bot,
   Calendar,
   Clock,
+  ArrowUpRight,
   Loader2,
-  Sparkles,
+  Search,
+  Stethoscope,
   ThumbsDown,
   ThumbsUp,
   User,
-  Users,
+  UserPlus,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,28 @@ interface ChatMessageListProps {
   activeToolName?: string | null;
   onSelectSuggestion: (question: string) => void;
 }
+
+const markdownComponents: Components = {
+  table: ({ children, ...props }) => (
+    <div className="my-3 min-w-0 max-w-full overflow-x-auto rounded-xl border border-border/70">
+      <table className="m-0 w-full min-w-[360px] border-collapse text-left text-xs md:text-sm" {...props}>
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children, ...props }) => (
+    <thead className="bg-blue-50/80 text-foreground dark:bg-blue-950/40" {...props}>{children}</thead>
+  ),
+  th: ({ children, ...props }) => (
+    <th className="whitespace-nowrap px-3 py-2.5 font-semibold" {...props}>{children}</th>
+  ),
+  tr: ({ children, ...props }) => (
+    <tr className="border-b border-border/60 last:border-0" {...props}>{children}</tr>
+  ),
+  td: ({ children, ...props }) => (
+    <td className="px-3 py-2.5 align-top" {...props}>{children}</td>
+  ),
+};
 
 export const ChatMessageList: React.FC<ChatMessageListProps> = ({
   messages,
@@ -77,12 +100,13 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
   const handleSaveFeedback = async () => {
     if (!feedbackMsgId) return;
-    await sendFeedbackMutation.mutateAsync({
+    sendFeedbackMutation.mutate({
       messageId: feedbackMsgId,
       isPositive: isPositiveFeedback,
       comment: feedbackComment.trim() || null,
+    }, {
+      onSuccess: () => setFeedbackMsgId(null),
     });
-    setFeedbackMsgId(null);
   };
 
   const getToolDisplayName = (name?: string | null) => {
@@ -99,23 +123,27 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
   const suggestedQuestions = [
     {
       icon: Calendar,
-      title: "Citas agendadas hoy",
-      prompt: "¿Cuáles son las citas médicas agendadas para el día de hoy?",
+      title: "Agenda de hoy",
+      detail: "Citas por hora, paciente y estado.",
+      prompt: "¿Cuáles son las citas médicas agendadas para hoy?",
     },
     {
-      icon: Users,
+      icon: UserPlus,
+      title: "Últimos pacientes",
+      detail: "Registros recientes, del más nuevo al más antiguo.",
+      prompt: "Muéstrame los últimos pacientes registrados.",
+    },
+    {
+      icon: Search,
       title: "Buscar paciente",
-      prompt: "Buscar información del paciente con DNI o por su nombre.",
+      detail: "Encuentra por nombre, apellido o DNI.",
+      prompt: "Busca a un paciente por nombre o DNI.",
     },
     {
       icon: Clock,
-      title: "Horarios de la clínica",
-      prompt: "¿Cuáles son los horarios de apertura y cierre de la clínica esta semana?",
-    },
-    {
-      icon: Sparkles,
-      title: "Disponibilidad médica",
-      prompt: "¿Qué doctores y especialidades tienen horario disponible hoy?",
+      title: "Horario de atención",
+      detail: "Días abiertos y horas de apertura y cierre.",
+      prompt: "¿Cuál es el horario de atención de la clínica?",
     },
   ];
 
@@ -136,40 +164,43 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
   if (messages.length === 0 && !isStreaming) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-2xl mx-auto select-none">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 shadow-sm">
-          <Bot className="w-6 h-6" />
-        </div>
-        <h3 className="text-lg font-semibold tracking-tight text-foreground mb-1">
-          Asistente Virtual Clínico
-        </h3>
-        <p className="text-xs text-muted-foreground mb-6 max-w-md">
-          Puedo ayudarte a consultar la agenda de citas, buscar información de pacientes, horarios
-          de atención y gestionar consultas de la clínica.
-        </p>
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-8 md:px-8 md:py-12">
+        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-center">
+          <div className="mb-8 max-w-2xl">
+            <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-300">
+              <Stethoscope className="h-4 w-4" />
+              <span>Consultas de clínica</span>
+            </div>
+            <h3 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+              ¿Qué necesitas consultar?
+            </h3>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+              Revisa la agenda, consulta pacientes o confirma los horarios de atención.
+            </p>
+          </div>
 
-        {/* Sugerencias de preguntas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
-          {suggestedQuestions.map((s, idx) => {
+          <div className="w-full max-w-3xl">
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Consultas frecuentes</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-10">
+          {suggestedQuestions.map((s) => {
             const Icon = s.icon;
             return (
               <button
-                key={idx}
+                key={s.title}
                 onClick={() => onSelectSuggestion(s.prompt)}
-                className="flex items-start gap-3 p-3 rounded-xl border border-border/60 bg-card hover:bg-accent/50 text-left transition-colors group shadow-xs"
+                className="group flex min-h-[76px] items-center gap-3 border-b border-border/70 py-3 text-left transition-colors duration-150 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:text-blue-300"
               >
-                <div className="p-2 rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
-                  <Icon className="w-4 h-4" />
+                <Icon className="h-4 w-4 shrink-0 text-blue-700 dark:text-blue-300" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-foreground">{s.title}</div>
+                  <div className="mt-0.5 text-xs leading-5 text-muted-foreground">{s.detail}</div>
                 </div>
-                <div>
-                  <div className="text-xs font-semibold text-foreground">{s.title}</div>
-                  <div className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
-                    {s.prompt}
-                  </div>
-                </div>
+                <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
               </button>
             );
           })}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -181,8 +212,9 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
       onScroll={handleScroll}
       role="log"
       aria-live="polite"
-      className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4"
+      className="flex-1 min-h-0 overflow-y-auto px-4 py-6 md:px-8 md:py-8"
     >
+      <div className="mx-auto w-full max-w-4xl min-w-0 space-y-6">
       {messages.map((msg, index) => {
         const sender = (msg.senderType || "").toLowerCase();
         const isUser =
@@ -211,39 +243,40 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
             )}
 
             <div
-              className={`flex items-start gap-3 w-full ${
+              className={`flex w-full min-w-0 items-start gap-3 ${
                 isUser ? "flex-row-reverse" : "flex-row"
               }`}
             >
               {/* Avatar */}
-              <Avatar className="w-7 h-7 shrink-0 border border-border/40">
+              <Avatar className="h-9 w-9 shrink-0 border border-blue-200/70 shadow-sm dark:border-blue-900">
                 <AvatarFallback
                   className={
                     isUser
-                      ? "bg-primary text-primary-foreground text-xs"
-                      : "bg-muted text-foreground text-xs"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
                   }
                 >
-                  {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                  {isUser ? <User className="w-3.5 h-3.5" /> : <Stethoscope className="w-3.5 h-3.5" />}
                 </AvatarFallback>
               </Avatar>
 
               {/* Burbuja de Mensaje */}
-              <div className={`group flex flex-col max-w-[85%] md:max-w-[75%] ${isUser ? "items-end" : "items-start"}`}>
+              <div className={`group flex w-full min-w-0 max-w-[88%] flex-col md:max-w-[78%] ${isUser ? "items-end" : "items-start"}`}>
                 <div
-                  className={`p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                  className={`w-full min-w-0 max-w-full rounded-2xl px-4 py-3.5 text-sm leading-6 shadow-sm ${
                     isUser
-                      ? "bg-primary text-primary-foreground rounded-tr-xs rounded-br-2xl"
-                      : "bg-muted/80 text-foreground border border-border/50 rounded-tl-xs rounded-bl-2xl"
+                      ? "rounded-tr-sm bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "rounded-tl-sm border-l-2 border-blue-100 border-l-blue-600/60 bg-muted/30 text-foreground dark:border-border dark:bg-card/70"
                   }`}
                 >
                   {isUser ? (
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                   ) : (
-                    <div className="prose prose-xs dark:prose-invert max-w-none break-words">
+                    <div className="prose prose-sm min-w-0 max-w-full break-words leading-7 dark:prose-invert">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeSanitize]}
+                        components={markdownComponents}
                       >
                         {msg.content}
                       </ReactMarkdown>
@@ -253,7 +286,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
                 {/* Acciones del mensaje del asistente (Feedback y métricas) */}
                 {!isUser && (
-                  <div className="flex items-center gap-2 mt-1.5 px-1 text-[11px] text-muted-foreground opacity-95 group-hover:opacity-100 transition-opacity">
+                  <div className="mt-1.5 flex items-center gap-2 px-1 text-xs text-muted-foreground">
                     {msg.executionTimeMs && (
                       <span className="text-[10px]">{msg.executionTimeMs}ms</span>
                     )}
@@ -266,19 +299,19 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenFeedback(msg.id, true)}
-                        className="h-5 w-5 hover:text-green-600"
+                        className="h-8 w-8 hover:text-green-700"
                         title="Respuesta útil"
                       >
-                        <ThumbsUp className="w-3 h-3" />
+                        <ThumbsUp className="h-3.5 w-3.5" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenFeedback(msg.id, false)}
-                        className="h-5 w-5 hover:text-destructive"
+                        className="h-8 w-8 hover:text-destructive"
                         title="Respuesta no útil"
                       >
-                        <ThumbsDown className="w-3 h-3" />
+                        <ThumbsDown className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
@@ -291,14 +324,14 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
       {/* Streaming Activo y Herramientas */}
       {isStreaming && (
-        <div className="flex items-start gap-3 flex-row">
-          <Avatar className="w-7 h-7 shrink-0 border border-border/40">
-            <AvatarFallback className="bg-muted text-foreground text-xs">
-              <Bot className="w-3.5 h-3.5" />
+        <div className="flex w-full min-w-0 items-start gap-3 flex-row">
+          <Avatar className="h-9 w-9 shrink-0 border border-blue-200/70 shadow-sm dark:border-blue-900">
+            <AvatarFallback className="bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+              <Stethoscope className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex flex-col max-w-[85%] md:max-w-[75%] space-y-2">
+          <div className="flex w-full min-w-0 max-w-[88%] flex-col space-y-2 md:max-w-[78%]">
             {/* Indicador de Ejecución de Herramienta en lenguaje natural */}
             {activeToolName && (
               <Badge
@@ -311,12 +344,13 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
             )}
 
             {/* Contenido progresivo en streaming */}
-            <div className="p-3.5 rounded-2xl rounded-tl-xs bg-muted/80 text-foreground border border-border/50 text-xs leading-relaxed shadow-xs">
+            <div className="w-full min-w-0 max-w-full rounded-2xl rounded-tl-sm border-l-2 border-blue-100 border-l-blue-600/60 bg-muted/30 px-4 py-3.5 text-sm leading-6 text-foreground dark:border-border dark:bg-card/70">
               {streamingText ? (
-                <div className="prose prose-xs dark:prose-invert max-w-none break-words">
+                <div className="prose prose-sm min-w-0 max-w-full break-words leading-7 dark:prose-invert">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeSanitize]}
+                    components={markdownComponents}
                   >
                     {streamingText}
                   </ReactMarkdown>
@@ -336,7 +370,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
       <Dialog open={!!feedbackMsgId} onOpenChange={(open) => !open && setFeedbackMsgId(null)}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle className="text-sm">
+            <DialogTitle className="text-base">
               {isPositiveFeedback ? "Calificar respuesta positiva" : "Reportar problema en respuesta"}
             </DialogTitle>
           </DialogHeader>
@@ -350,19 +384,20 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
               value={feedbackComment}
               onChange={(e) => setFeedbackComment(e.target.value)}
               placeholder="Escribe tu comentario..."
-              className="text-xs min-h-[80px]"
+              className="min-h-[96px] text-sm"
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" size="sm" onClick={() => setFeedbackMsgId(null)}>
+              <Button variant="outline" size="sm" onClick={() => setFeedbackMsgId(null)}>
               Cancelar
             </Button>
-            <Button size="sm" onClick={handleSaveFeedback}>
-              Enviar feedback
+            <Button size="sm" onClick={handleSaveFeedback} disabled={sendFeedbackMutation.isPending}>
+              {sendFeedbackMutation.isPending ? "Enviando…" : "Enviar comentario"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

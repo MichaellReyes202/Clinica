@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-    Calendar, Stethoscope, FileText,
+    Calendar, Stethoscope, FileText, AlertTriangle,
     Pill, FlaskConical, Download, Eye, Phone, MapPin, Activity,
     Clock,
     Loader2
@@ -28,11 +28,32 @@ import type { ExamPendingDto } from "@/interfaces/Laboratory.response";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface PatientHistoryContentProps {
     patientId: number;
 }
+
+const calculatePatientAge = (dateOfBirth: string) => {
+    const [year, month, day] = (dateOfBirth || "").slice(0, 10).split("-").map(Number);
+    if (!year || !month || !day) return null;
+    const birthDate = new Date(year, month - 1, day);
+    if (Number.isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const birthdayHasPassed = today.getMonth() > birthDate.getMonth() ||
+        (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+    if (!birthdayHasPassed) age -= 1;
+    return age >= 0 ? age : null;
+};
+
+const formatPatientBirthDate = (dateOfBirth: string) => {
+    const [year, month, day] = (dateOfBirth || "").slice(0, 10).split("-").map(Number);
+    if (!year || !month || !day) return "Fecha no registrada";
+    const birthDate = new Date(year, month - 1, day);
+    return Number.isNaN(birthDate.getTime()) ? "Fecha no registrada" : birthDate.toLocaleDateString("es-NI");
+};
 
 export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps) => {
     const [selectedConsultation, setSelectedConsultation] = useState<ConsultationDetailDto | null>(null);
@@ -48,6 +69,7 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
     const { consultations, exams, isLoadingConsultations, isLoadingExams } = usePatientHistory(patientId);
 
     const isLoading = isLoadingPatient || isLoadingConsultations || isLoadingExams;
+    const patientAge = patient ? calculatePatientAge(patient.dateOfBirth) : null;
 
     const handleViewDetails = (consultation: ConsultationDetailDto) => {
         setSelectedConsultation(consultation);
@@ -87,47 +109,48 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
     return (
         <div className="space-y-6 w-full">
             {/* Patient Profile Card */}
-            <Card className="border-none shadow-lg bg-linear-to-r from-sidebar-primary/10 via-background to-background overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <Activity className="h-48 w-48 text-sidebar-primary" />
-                </div>
-                <CardContent className="p-6 relative z-10">
-                    <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-                        <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${patient.firstName} ${patient.lastName}`} />
-                            <AvatarFallback className="text-2xl bg-sidebar-primary text-primary-foreground">
-                                {patient.firstName[0]}{patient.lastName[0]}
+            <Card className="overflow-hidden border-border/70 shadow-sm">
+                <CardContent className="p-5 md:p-6">
+                    <div className="flex flex-col items-start gap-5 md:flex-row md:items-center">
+                        <Avatar className="h-16 w-16 shrink-0 border border-sidebar-primary/20">
+                            <AvatarFallback className="bg-sidebar-primary/10 text-lg font-semibold text-sidebar-primary">
+                                {`${patient.firstName?.[0] || ""}${patient.lastName?.[0] || ""}`.toUpperCase()}
                             </AvatarFallback>
                         </Avatar>
 
-                        <div className="flex-1 space-y-2">
+                        <div className="min-w-0 flex-1 space-y-2">
                             <div className="flex flex-wrap items-center gap-3">
-                                <h2 className="text-2xl font-bold text-foreground">
+                                <h2 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
                                     {patient.firstName} {patient.lastName} {patient.secondLastName}
                                 </h2>
 
-                                <Badge variant="outline" className="rounded-full border-sidebar-primary/30 text-sidebar-primary bg-sidebar-primary/5">
-                                    ID: {patient.id}
+                                <Badge variant="outline" className="border-sidebar-primary/30 bg-sidebar-primary/5 text-sidebar-primary">
+                                    Expediente #{patient.id}
                                 </Badge>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Calendar className="h-4 w-4 text-sidebar-primary" />
-                                    <span>{new Date(patient.dateOfBirth).toLocaleDateString()} ({new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()} años)</span>
+                            <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2 2xl:grid-cols-4">
+                                <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
+                                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-sidebar-primary" />
+                                    <span>{formatPatientBirthDate(patient.dateOfBirth)} · {patientAge === null ? "Edad no disponible" : `${patientAge} años`}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
+                                <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
                                     <Phone className="h-4 w-4 text-sidebar-primary" />
-                                    <span>{patient.contactPhone}</span>
+                                    <span>{patient.contactPhone || "Sin teléfono registrado"}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
+                                <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
                                     <Activity className="h-4 w-4 text-sidebar-primary" />
                                     <span>Tipo de Sangre: <span className="font-semibold text-foreground">{patient.bloodType?.name || "N/A"}</span></span>
                                 </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
+                                <div className="flex min-w-0 items-start gap-2 text-muted-foreground">
                                     <MapPin className="h-4 w-4 text-sidebar-primary" />
-                                    <span className="truncate max-w-[200px]" title={patient.address}>{patient.address}</span>
+                                    <span className="truncate" title={patient.address}>{patient.address || "Sin dirección registrada"}</span>
                                 </div>
+                            </div>
+                            <div className={`mt-4 flex items-start gap-2 rounded-md border-l-4 px-3 py-2.5 text-sm ${patient.allergies ? "border-amber-600 bg-amber-50 text-amber-950 dark:border-amber-400 dark:bg-amber-950/60 dark:text-amber-100" : "border-border bg-muted/30 text-muted-foreground"}`}>
+                                {patient.allergies && <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-800 dark:text-amber-300" />}
+                                <span className="shrink-0 font-semibold">Alergias:</span>
+                                <span className="min-w-0">{patient.allergies || "Sin datos registrados"}</span>
                             </div>
                         </div>
                     </div>
@@ -136,11 +159,13 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
 
             {/* Main Content Tabs */}
             <Tabs defaultValue="timeline" className="w-full space-y-6">
-                <TabsList className="grid w-full grid-cols-4 lg:w-[600px] bg-muted/50 p-1 rounded-xl">
-                    <TabsTrigger value="timeline" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Línea de Tiempo</TabsTrigger>
-                    <TabsTrigger value="consultations" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Consultas</TabsTrigger>
-                    <TabsTrigger value="exams" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Exámenes</TabsTrigger>
-                    <TabsTrigger value="prescriptions" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">Recetas</TabsTrigger>
+                <TabsList className="grid w-full max-w-5xl grid-cols-4 rounded-xl border border-border/70 bg-muted/30 p-1 dark:bg-muted/20">
+                    <TabsTrigger value="timeline" aria-label="Línea de tiempo" className="rounded-lg px-1 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm dark:text-foreground/80 dark:data-[state=active]:border-border dark:data-[state=active]:bg-card dark:data-[state=active]:text-foreground sm:px-3 sm:text-sm">
+                        <span className="sm:hidden">Línea</span><span className="hidden sm:inline">Línea de tiempo</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="consultations" className="rounded-lg px-1 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm dark:text-foreground/80 dark:data-[state=active]:border-border dark:data-[state=active]:bg-card dark:data-[state=active]:text-foreground sm:px-3 sm:text-sm">Consultas</TabsTrigger>
+                    <TabsTrigger value="exams" className="rounded-lg px-1 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm dark:text-foreground/80 dark:data-[state=active]:border-border dark:data-[state=active]:bg-card dark:data-[state=active]:text-foreground sm:px-3 sm:text-sm">Exámenes</TabsTrigger>
+                    <TabsTrigger value="prescriptions" className="rounded-lg px-1 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm dark:text-foreground/80 dark:data-[state=active]:border-border dark:data-[state=active]:bg-card dark:data-[state=active]:text-foreground sm:px-3 sm:text-sm">Recetas</TabsTrigger>
                 </TabsList>
 
                 {/* TIMELINE TAB */}
@@ -189,7 +214,7 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
                                                 <CardContent className="pt-4 grid md:grid-cols-2 gap-4">
                                                     <div className="space-y-3">
                                                         <div className="flex items-start gap-3">
-                                                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                                            <div className="p-2 rounded-lg bg-sidebar-primary/10 text-sidebar-primary">
                                                                 <Stethoscope className="h-5 w-5" />
                                                             </div>
                                                             <div>
@@ -198,7 +223,7 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
                                                             </div>
                                                         </div>
                                                         <div className="flex items-start gap-3">
-                                                            <div className="p-2 bg-green-50 rounded-lg text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                                            <div className="p-2 rounded-lg bg-sidebar-primary/10 text-sidebar-primary">
                                                                 <Activity className="h-5 w-5" />
                                                             </div>
                                                             <div>
@@ -210,14 +235,14 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
 
                                                     <div className="flex flex-col gap-2 justify-center">
                                                         {consultation.prescriptions.length > 0 && (
-                                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400 text-sm">
-                                                                <Pill className="h-4 w-4" />
+                                                            <div className="flex items-center gap-2 rounded-lg border border-sidebar-primary/10 bg-sidebar-primary/5 p-2 text-sm text-sidebar-primary">
+                                                                <Pill className="h-4 w-4 shrink-0" />
                                                                 <span className="font-medium">{consultation.prescriptions.reduce((acc, p) => acc + p.items.length, 0)} Medicamentos recetados</span>
                                                             </div>
                                                         )}
                                                         {consultation.exams.length > 0 && (
-                                                            <div className="flex items-center gap-2 p-2 rounded-lg bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400 text-sm">
-                                                                <FlaskConical className="h-4 w-4" />
+                                                            <div className="flex items-center gap-2 rounded-lg border border-sidebar-primary/10 bg-sidebar-primary/5 p-2 text-sm text-sidebar-primary">
+                                                                <FlaskConical className="h-4 w-4 shrink-0" />
                                                                 <span className="font-medium">{consultation.exams.length} Exámenes solicitados</span>
                                                             </div>
                                                         )}
@@ -249,8 +274,8 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
                                         Dr. {consultation.doctorName}
                                     </p>
                                     <div className="mt-4 flex gap-2">
-                                        {consultation.diagnosis && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Diagnóstico</Badge>}
-                                        {consultation.prescriptions.length > 0 && <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Receta</Badge>}
+                                        {consultation.diagnosis && <Badge variant="outline" className="border-sidebar-primary/20 bg-sidebar-primary/5 text-sidebar-primary">Diagnóstico</Badge>}
+                                        {consultation.prescriptions.length > 0 && <Badge variant="outline" className="border-sidebar-primary/20 bg-sidebar-primary/5 text-sidebar-primary">Receta</Badge>}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -274,27 +299,27 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
                                         <div
                                             key={exam.id}
                                             className={`p-4 rounded-lg border ${exam.statusName === "Completado" || exam.statusId === 2
-                                                ? "bg-green-50 border-green-100 cursor-pointer hover:bg-green-100 transition-colors"
-                                                : "bg-gray-50 border-gray-100"
+                                                ? "bg-green-50 border-green-100 cursor-pointer hover:bg-green-100 transition-colors dark:bg-green-950/40 dark:border-green-900 dark:hover:bg-green-950/60"
+                                                : "bg-gray-50 border-gray-100 dark:bg-muted/30 dark:border-border"
                                                 }`}
                                             onClick={() => handleExamClick(exam)}
                                         >
                                             <div className="flex justify-between items-start mb-2">
-                                                <div className="font-medium text-gray-900">{exam.examTypeName}</div>
+                                                <div className="font-medium text-foreground">{exam.examTypeName}</div>
                                                 <Badge variant={
                                                     exam.statusName === "Completado" || exam.statusId === 2 ? "outline" :
                                                         exam.statusName === "Pendiente" ? "secondary" : "secondary"
                                                 } className={
-                                                    exam.statusName === "Completado" || exam.statusId === 2 ? "bg-green-50 text-green-700 border-green-200" :
-                                                        exam.statusName === "Pendiente" ? "bg-yellow-50 text-yellow-700 border-yellow-200" : ""
+                                                    exam.statusName === "Completado" || exam.statusId === 2 ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50 dark:text-green-200 dark:border-green-900" :
+                                                        exam.statusName === "Pendiente" ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/50 dark:text-yellow-200 dark:border-yellow-900" : ""
                                                 }>
                                                     {exam.statusName}
                                                 </Badge>
                                             </div>
-                                            <div className="text-sm text-gray-500 flex justify-between">
+                                            <div className="text-sm text-muted-foreground flex justify-between">
                                                 <span>Ordenado: {new Date(exam.createdAt).toLocaleDateString()}</span>
                                                 {(exam.statusName === "Completado" || exam.statusId === 2) && (
-                                                    <span className="text-xs text-green-600 font-medium mt-1 block">
+                                                    <span className="text-xs text-green-600 dark:text-green-300 font-medium mt-1 block">
                                                         Click para ver resultados
                                                     </span>
                                                 )}
@@ -323,11 +348,11 @@ export const PatientHistoryContent = ({ patientId }: PatientHistoryContentProps)
                                                 <Calendar className="h-4 w-4" />
                                                 {format(new Date(consultation.createdAt), "dd 'de' MMMM, yyyy")} - Dr. {consultation.doctorName}
                                             </div>
-                                            <div className="grid gap-3 pl-4 border-l-2 border-orange-200">
+                                            <div className="grid gap-3 border-l-2 border-sidebar-primary/20 pl-4">
                                                 {consultation.prescriptions.flatMap(p => p.items).map((item, idx) => (
                                                     <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-card border rounded-lg shadow-sm">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="p-2 bg-orange-100 text-orange-600 rounded-full">
+                                                            <div className="rounded-full bg-sidebar-primary/10 p-2 text-sidebar-primary">
                                                                 <Pill className="h-4 w-4" />
                                                             </div>
                                                             <div>

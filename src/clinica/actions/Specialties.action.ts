@@ -3,7 +3,6 @@ import type { DoctorBySpecialtyDto } from "@/interfaces/Appointment.response";
 import type { OptionDto } from "@/interfaces/OptionDto.response";
 import type { Options, PaginatedResponseDto } from "@/interfaces/Paginated.response";
 import type { SpecialtiesCreation, SpecialtiesUpdate, SpecialtyListDto } from "@/interfaces/Specialties.response";
-import { isAxiosError } from "axios";
 
 // Obtener la lista de las especialidades en forma de opciones
 export const getSpecialtiesOption = async (): Promise<OptionDto[]> => {

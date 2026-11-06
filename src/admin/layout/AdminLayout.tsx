@@ -2,13 +2,19 @@
 import { Header } from "@/admin/components/Header"
 import { Sidebar } from "@/admin/components/Sidebar"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Outlet, useLocation } from "react-router"
 
 export const AdminLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const location = useLocation();
   const isChatPage = location.pathname === "/dashboard/chat";
+
+  useEffect(() => {
+    if (isChatPage && window.matchMedia("(max-width: 767px)").matches) {
+      setIsSidebarCollapsed(true);
+    }
+  }, [isChatPage]);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);

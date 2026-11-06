@@ -346,7 +346,7 @@ const Contact: React.FC = () => {
         resolver: zodResolver(contactSchema),
     });
 
-    const onSubmit = async (data: ContactFormData) => {
+    const onSubmit = async () => {
         setIsSubmitting(true);
         await new Promise(resolve => setTimeout(resolve, 1500));
         setIsSubmitting(false);

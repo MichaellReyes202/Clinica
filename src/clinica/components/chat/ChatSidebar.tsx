@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,12 +48,30 @@ import {
 import type { ChatConversationDto } from "@/interfaces/Chat.response";
 
 interface ChatSidebarProps {
+  className?: string;
   activeConversationId: number | null;
   onSelectConversation: (id: number | null) => void;
   onNewConversation: () => void;
 }
 
-export const ChatSidebar: React.FC<ChatSidebarProps> = ({ activeConversationId, onSelectConversation, onNewConversation }) => {
+const formatConversationDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) {
+    return new Intl.DateTimeFormat("es-NI", { hour: "2-digit", minute: "2-digit" }).format(date);
+  }
+  if (isYesterday) return "Ayer";
+  return new Intl.DateTimeFormat("es-NI", { day: "numeric", month: "short" }).format(date);
+};
+
+export const ChatSidebar: React.FC<ChatSidebarProps> = ({ className = "flex", activeConversationId, onSelectConversation, onNewConversation }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showArchived, setShowArchived] = useState(false);
 
@@ -94,10 +111,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ activeConversationId, 
   };
 
   return (
-    <aside className="w-full md:w-80 border-r bg-sidebar border-border/60 flex flex-col h-full shrink-0 min-h-0 overflow-hidden select-none">
+    <aside className={`w-full xl:w-72 border-r bg-sidebar border-border/60 ${className} flex-col h-full shrink-0 min-h-0 overflow-hidden`}>
       {/* Cabecera / Nueva Conversación */}
       <div className="p-4 border-b border-border/60 flex flex-col gap-3 shrink-0">
-        <Button onClick={onNewConversation} className="w-full justify-start gap-2 font-medium shadow-sm" variant="default">
+        <Button onClick={onNewConversation} className="w-full justify-start gap-2 bg-sidebar-primary font-medium text-sidebar-primary-foreground hover:bg-sidebar-primary/90" variant="default">
           <MessageSquarePlus className="w-4 h-4" /> Nueva conversación
         </Button>
 
@@ -109,20 +126,20 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ activeConversationId, 
             placeholder="Buscar conversaciones..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 text-xs h-9 bg-background/50"
+            className="pl-8 h-10 bg-background/70 text-sm"
           />
         </div>
 
         {/* Pestañas de Activas vs Archivadas */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
-          <span className="font-semibold text-foreground/80">
+        <div className="flex items-center justify-between px-1 text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">
             {showArchived ? "Archivadas" : "Conversaciones"}
           </span>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowArchived(!showArchived)}
-            className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+            className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
           >
             {showArchived ? (
               <span className="flex items-center gap-1">
@@ -146,36 +163,45 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ activeConversationId, 
             ))}
           </div>
         ) : conversations.length === 0 ? (
-          <div className="text-center py-8 px-4 text-xs text-muted-foreground">
+          <div className="px-4 py-10 text-center text-sm text-muted-foreground">
             {showArchived
               ? "No hay conversaciones archivadas."
               : "No tienes conversaciones iniciadas."}
           </div>
         ) : (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col">
             {conversations.map((conv) => {
               const isActive = conv.id === activeConversationId;
               return (
                 <div
                   key={conv.id}
-                  onClick={() => onSelectConversation(conv.id)}
-                  className={`group relative flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors text-xs ${isActive
-                    ? "bg-primary/10 text-primary font-medium border border-primary/20"
-                    : "hover:bg-muted/60 text-foreground/90"
+                  className={`group relative flex min-h-[58px] items-center justify-between border-l-2 px-2 py-1 transition-colors ${isActive
+                    ? "border-l-sidebar-primary bg-sidebar-primary/5 text-foreground"
+                    : "border-l-transparent text-foreground/85 hover:bg-background/70"
                     }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0 pr-6">
-                    {conv.isPinned && (
-                      <Pin className="w-3.5 h-3.5 text-primary shrink-0 rotate-45" />
-                    )}
-                    <span className="truncate">{conv.title}</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onSelectConversation(conv.id)}
+                    aria-current={isActive ? "page" : undefined}
+                    className="flex min-h-10 min-w-0 flex-1 items-center rounded-md pr-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="flex min-w-0 items-center gap-1.5 text-sm">
+                        {conv.isPinned && (
+                          <Pin className="h-3 w-3 shrink-0 rotate-45 text-sidebar-primary" />
+                        )}
+                        <span className="truncate">{conv.title}</span>
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">{formatConversationDate(conv.updatedAt)}</span>
+                    </span>
+                  </button>
 
                   {/* Menú Contextual de la Conversación */}
-                  <div className="absolute right-1 top-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="shrink-0 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground" aria-label={`Opciones para ${conv.title}`}>
                           <MoreVertical className="w-3.5 h-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -257,7 +283,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({ activeConversationId, 
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Escribe el nuevo título..."
-              className="text-xs"
+              className="text-sm"
               onKeyDown={(e) => e.key === "Enter" && handleSaveRename()}
             />
           </div>
