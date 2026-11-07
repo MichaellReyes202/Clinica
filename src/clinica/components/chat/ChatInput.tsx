@@ -53,8 +53,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="shrink-0 border-t border-border/60 bg-background/90 px-3 py-3 backdrop-blur md:px-6 md:py-4">
-      <div className="mx-auto flex max-w-4xl items-end gap-2 rounded-xl border border-border bg-card p-2 transition-colors focus-within:border-sidebar-primary/50 focus-within:ring-2 focus-within:ring-sidebar-primary/10">
+    <div className="shrink-0 border-t border-border bg-card px-3 py-3.5 md:px-6 md:py-4">
+      <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-border bg-background p-2 shadow-sm transition-[border-color,box-shadow,ring-color] focus-within:border-sidebar-primary/60 focus-within:shadow-md focus-within:ring-2 focus-within:ring-sidebar-primary/15">
         <Textarea
           ref={textareaRef}
           value={inputMessage}
@@ -63,7 +63,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           maxLength={4000}
           placeholder="Pregunta por citas, pacientes u horarios…"
           aria-label="Escribe tu pregunta para el asistente clínico"
-          className="min-h-[44px] max-h-[160px] flex-1 resize-none border-0 bg-transparent px-3 py-3 text-sm leading-6 focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="min-h-[46px] max-h-[160px] flex-1 resize-none border-0 bg-transparent px-3 py-3 text-[15px] leading-6 text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
           rows={1}
         />
 
@@ -72,7 +72,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             type="button"
             size="icon"
             onClick={onCancelStream}
-            className="h-11 w-11 shrink-0 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="h-10 w-10 shrink-0 rounded-xl bg-muted text-foreground hover:bg-muted/80"
             title="Detener respuesta"
             aria-label="Detener respuesta"
           >
@@ -84,7 +84,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             size="icon"
             onClick={handleSend}
             disabled={!inputMessage.trim()}
-            className="h-11 w-11 shrink-0 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground shadow-sm hover:bg-sidebar-primary/90"
+            className="h-10 w-10 shrink-0 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
             title="Enviar mensaje"
             aria-label="Enviar mensaje"
           >
@@ -92,7 +92,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </Button>
         )}
       </div>
-      <div className="mx-auto mt-2 max-w-4xl px-1 text-[11px] leading-5 text-muted-foreground">
+      <div className="mx-auto mt-2 max-w-3xl px-1 text-center text-[10px] leading-5 text-muted-foreground">
         El asistente consulta solo la información habilitada para tu usuario. Confirma los datos antes de actuar.
       </div>
     </div>

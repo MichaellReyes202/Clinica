@@ -61,6 +61,7 @@ export interface DoctorAvailabilityDto {
    nextAppointmentDisplay: string;
    availableSlotsToday: number;
    appointmentsTodayCount: number;
+   appointmentDurationMinutes: number;
 }
 
 export interface TodayAppointmentDto {

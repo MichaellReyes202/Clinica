@@ -181,6 +181,12 @@ export const useChatStream = (): UseChatStreamReturn => {
           if (abortControllerRef.current !== controller) return;
           setStreamingText((prev) => prev + chunk);
         },
+        onDataChanged: (resource: string) => {
+          if (resource === "appointments") {
+            void queryClient.invalidateQueries({ queryKey: ["appointments"] });
+            void queryClient.invalidateQueries({ queryKey: ["today-appointments"] });
+          }
+        },
         onDone: () => {
           if (abortControllerRef.current !== controller) return;
           setIsStreaming(false);
@@ -199,7 +205,7 @@ export const useChatStream = (): UseChatStreamReturn => {
         onAbort: () => refreshConversation(streamConversationIdRef.current),
       });
     },
-    [refreshConversation]
+    [queryClient, refreshConversation]
   );
 
   return {

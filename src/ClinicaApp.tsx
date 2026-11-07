@@ -48,6 +48,11 @@ const CheckAuthProvider = ({ children }: PropsWithChildren) => {
 const queryClient = new QueryClient();
 export const ClinicaApp = () => {
   const { theme } = useThemeStore();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
   return (
     <div className={theme} >
       <QueryClientProvider client={queryClient}>

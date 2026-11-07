@@ -62,6 +62,7 @@ export const streamChatMessageAction = async ({
   message,
   onChunk,
   onDone,
+  onDataChanged,
   onError,
   onAbort,
   onConversationId,
@@ -136,6 +137,9 @@ export const streamChatMessageAction = async ({
           break;
         case "chunk":
           if (typeof event.content === "string") onChunk(event.content);
+          break;
+        case "data_changed":
+          if (typeof event.message === "string") onDataChanged?.(event.message);
           break;
         case "error":
           throw new Error(event.message || "No se pudo completar la respuesta.");

@@ -4,19 +4,20 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import {
   Calendar,
+  Check,
   Clock,
   ArrowUpRight,
+  CircleCheck,
+  Clipboard,
+  ChevronDown,
   Loader2,
   Search,
   Stethoscope,
   ThumbsDown,
   ThumbsUp,
-  User,
   UserPlus,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -28,6 +29,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useSendChatFeedback } from "@/clinica/hooks/useChat";
 import type { ChatMessageDto } from "@/interfaces/Chat.response";
+import { toast } from "sonner";
 
 interface ChatMessageListProps {
   messages: ChatMessageDto[];
@@ -40,23 +42,23 @@ interface ChatMessageListProps {
 
 const markdownComponents: Components = {
   table: ({ children, ...props }) => (
-    <div className="my-3 min-w-0 max-w-full overflow-x-auto rounded-xl border border-border/70">
+    <div className="my-4 min-w-0 max-w-full overflow-x-auto rounded-lg border border-border bg-card">
       <table className="m-0 w-full min-w-[360px] border-collapse text-left text-xs md:text-sm" {...props}>
         {children}
       </table>
     </div>
   ),
   thead: ({ children, ...props }) => (
-    <thead className="bg-blue-50/80 text-foreground dark:bg-blue-950/40" {...props}>{children}</thead>
+    <thead className="bg-muted text-muted-foreground" {...props}>{children}</thead>
   ),
   th: ({ children, ...props }) => (
-    <th className="whitespace-nowrap px-3 py-2.5 font-semibold" {...props}>{children}</th>
+    <th className="whitespace-nowrap px-4 py-2.5 font-semibold" {...props}>{children}</th>
   ),
   tr: ({ children, ...props }) => (
-    <tr className="border-b border-border/60 last:border-0" {...props}>{children}</tr>
+    <tr className="border-b border-border transition-colors hover:bg-muted/50 last:border-0" {...props}>{children}</tr>
   ),
   td: ({ children, ...props }) => (
-    <td className="px-3 py-2.5 align-top" {...props}>{children}</td>
+    <td className="px-4 py-2.5 align-top text-foreground" {...props}>{children}</td>
   ),
 };
 
@@ -75,6 +77,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
   const [feedbackMsgId, setFeedbackMsgId] = useState<number | null>(null);
   const [isPositiveFeedback, setIsPositiveFeedback] = useState<boolean>(true);
   const [feedbackComment, setFeedbackComment] = useState<string>("");
+  const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
 
   const sendFeedbackMutation = useSendChatFeedback();
 
@@ -109,16 +112,36 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
     });
   };
 
-  const getToolDisplayName = (name?: string | null) => {
-    if (!name) return "Ejecutando acción del sistema...";
-    if (name.includes("ObtenerCitas")) return "Consultando las citas agendadas...";
-    if (name.includes("BuscarPacientes")) return "Buscando pacientes en el sistema...";
-    if (name.includes("ObtenerHorarios")) return "Consultando horarios de la clínica...";
-    return `Ejecutando ${name}...`;
+  const handleCopyMessage = async (message: ChatMessageDto) => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopiedMessageId(message.id);
+      window.setTimeout(() => setCopiedMessageId(null), 1600);
+    } catch {
+      toast.error("No se pudo copiar la respuesta.");
+    }
   };
 
-  // Determinar índice para colocar el separador de los 5 mensajes de memoria
-  const memoryBoundaryIndex = Math.max(0, messages.length - 5);
+  const formatExecutionTime = (milliseconds?: number | null) => {
+    if (milliseconds == null) return null;
+    return `${(milliseconds / 1000).toFixed(1)} s`;
+  };
+
+  const getToolDisplayName = (name?: string | null) => {
+    if (!name) return "Procesando tu consulta…";
+    if (name.includes("AgendarCita")) return "Registrando la cita…";
+    if (name.includes("BuscarCitas")) return "Buscando citas…";
+    if (name.includes("CambiarOCancelarCita")) return "Actualizando la cita…";
+    if (name.includes("BuscarPacientes")) return "Buscando pacientes…";
+    if (name.includes("BuscarMedicos")) return "Revisando disponibilidad…";
+    if (name.includes("ObtenerHorarios")) return "Consultando el horario…";
+    if (name.includes("ApoyoClinico")) return "Registrando la solicitud clínica…";
+    if (name.includes("ExcepcionesDeCitas")) return "Revisando solicitudes de citas…";
+    if (name.includes("ResolverExcepcion")) return "Actualizando la solicitud de cita…";
+    if (name.includes("ResolverApoyo")) return "Actualizando la solicitud clínica…";
+    if (name.includes("ObtenerCitas")) return "Consultando la agenda…";
+    return "Procesando tu consulta…";
+  };
 
   const suggestedQuestions = [
     {
@@ -149,14 +172,14 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex-1 p-6 flex flex-col gap-4">
+      <div className="flex flex-1 flex-col gap-4 bg-background p-6">
         <div className="flex items-start gap-3">
-          <Skeleton className="w-8 h-8 rounded-full" />
-          <Skeleton className="h-16 w-3/4 rounded-xl" />
+          <Skeleton className="h-8 w-8 rounded-full bg-muted" />
+          <Skeleton className="h-16 w-3/4 rounded-xl bg-muted" />
         </div>
         <div className="flex items-start gap-3 flex-row-reverse">
-          <Skeleton className="w-8 h-8 rounded-full" />
-          <Skeleton className="h-12 w-2/3 rounded-xl" />
+          <Skeleton className="h-8 w-8 rounded-full bg-muted" />
+          <Skeleton className="h-12 w-2/3 rounded-xl bg-muted" />
         </div>
       </div>
     );
@@ -164,38 +187,37 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
   if (messages.length === 0 && !isStreaming) {
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-8 md:px-8 md:py-12">
-        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col justify-center">
-          <div className="mb-8 max-w-2xl">
-            <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-300">
-              <Stethoscope className="h-4 w-4" />
-              <span>Consultas de clínica</span>
+      <div className="flex min-h-0 flex-1 overflow-y-auto bg-background px-5 py-8 md:px-10 md:py-12">
+        <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center">
+          <div className="mb-9 max-w-2xl">
+            <div className="mb-5 flex items-center gap-2.5 text-[11px] font-medium uppercase tracking-[0.16em] text-sidebar-primary">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sidebar-primary/10">
+                <Stethoscope className="h-3.5 w-3.5" />
+              </span>
+              <span>Asistente clínico</span>
             </div>
-            <h3 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+            <h3 className="text-[28px] font-medium tracking-[-0.03em] text-foreground md:text-[34px]">
               ¿Qué necesitas consultar?
             </h3>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 max-w-xl text-[14px] leading-6 text-muted-foreground">
               Revisa la agenda, consulta pacientes o confirma los horarios de atención.
             </p>
           </div>
 
           <div className="w-full max-w-3xl">
-            <p className="mb-1 text-xs font-medium text-muted-foreground">Consultas frecuentes</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-10">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Consultas frecuentes</p>
+            <div className="flex flex-wrap gap-2">
           {suggestedQuestions.map((s) => {
             const Icon = s.icon;
             return (
               <button
                 key={s.title}
                 onClick={() => onSelectSuggestion(s.prompt)}
-                className="group flex min-h-[76px] items-center gap-3 border-b border-border/70 py-3 text-left transition-colors duration-150 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:text-blue-300"
+                className="group inline-flex min-h-10 items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-left text-sm transition-colors hover:border-sidebar-primary/40 hover:bg-sidebar-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Icon className="h-4 w-4 shrink-0 text-blue-700 dark:text-blue-300" />
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-foreground">{s.title}</div>
-                  <div className="mt-0.5 text-xs leading-5 text-muted-foreground">{s.detail}</div>
-                </div>
-                <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+                <Icon className="h-4 w-4 shrink-0 text-sidebar-primary" />
+                <span className="font-medium text-foreground">{s.title}</span>
+                <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-sidebar-primary opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
               </button>
             );
           })}
@@ -212,9 +234,9 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
       onScroll={handleScroll}
       role="log"
       aria-live="polite"
-      className="flex-1 min-h-0 overflow-y-auto px-4 py-6 md:px-8 md:py-8"
+      className="min-h-0 flex-1 overflow-y-auto bg-background px-4 py-7 md:px-8 md:py-9"
     >
-      <div className="mx-auto w-full max-w-4xl min-w-0 space-y-6">
+      <div className="mx-auto w-full max-w-3xl min-w-0 space-y-8">
       {messages.map((msg, index) => {
         const sender = (msg.senderType || "").toLowerCase();
         const isUser =
@@ -224,55 +246,53 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
           sender.includes("user") ||
           sender.includes("usuario");
 
-        const showMemorySeparator = index === memoryBoundaryIndex && messages.length > 5;
-
         return (
           <React.Fragment key={msg.id || index}>
-            {/* Separador de memoria de 5 mensajes */}
-            {showMemorySeparator && (
-              <div className="flex items-center gap-3 my-4">
-                <div className="h-px flex-1 bg-border/60" />
-                <Badge
-                  variant="outline"
-                  className="text-[10px] text-muted-foreground font-normal bg-background/80"
-                >
-                  Límite de memoria del asistente (últimos 5 mensajes)
-                </Badge>
-                <div className="h-px flex-1 bg-border/60" />
-              </div>
-            )}
-
             <div
-              className={`flex w-full min-w-0 items-start gap-3 ${
-                isUser ? "flex-row-reverse" : "flex-row"
+              className={`flex w-full min-w-0 ${
+                isUser ? "justify-end" : "justify-start"
               }`}
             >
-              {/* Avatar */}
-              <Avatar className="h-9 w-9 shrink-0 border border-blue-200/70 shadow-sm dark:border-blue-900">
-                <AvatarFallback
-                  className={
-                    isUser
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                  }
-                >
-                  {isUser ? <User className="w-3.5 h-3.5" /> : <Stethoscope className="w-3.5 h-3.5" />}
-                </AvatarFallback>
-              </Avatar>
-
-              {/* Burbuja de Mensaje */}
-              <div className={`group flex w-full min-w-0 max-w-[88%] flex-col md:max-w-[78%] ${isUser ? "items-end" : "items-start"}`}>
+              <div className={`group flex min-w-0 flex-col ${isUser ? "max-w-[88%] md:max-w-[74%]" : "w-full max-w-full md:max-w-[90%]"}`}>
+                {!isUser && (
+                  <div className="mb-2 flex items-center gap-2 px-1 text-[10px] font-medium uppercase tracking-[0.12em] text-sidebar-primary">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sidebar-primary" />
+                    Asistente clínico
+                  </div>
+                )}
+                {!isUser && msg.executionTimeMs != null && (
+                  <details className="group/status mb-2 w-fit max-w-full rounded-full border border-border bg-card text-xs text-muted-foreground">
+                    <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-1.5 [&::-webkit-details-marker]:hidden">
+                      <CircleCheck className="h-3.5 w-3.5 shrink-0 text-sidebar-primary" />
+                      <span>Consulta completada en {formatExecutionTime(msg.executionTimeMs)}</span>
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform group-open/status:rotate-180" />
+                    </summary>
+                    <div className="px-3 pb-2 pl-8 text-xs leading-5">
+                      <p>Tiempo total de generación registrado para esta respuesta.</p>
+                      {!!msg.toolNames?.length && (
+                        <ul className="mt-1.5 space-y-1">
+                          {[...new Set(msg.toolNames)].map((toolName) => (
+                            <li key={toolName} className="flex items-center gap-1.5">
+                              <Check className="h-3 w-3 text-sidebar-primary" />
+                              {getToolDisplayName(toolName)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </details>
+                )}
                 <div
-                  className={`w-full min-w-0 max-w-full rounded-2xl px-4 py-3.5 text-sm leading-6 shadow-sm ${
+                  className={`w-full min-w-0 max-w-full text-[14px] leading-7 ${
                     isUser
-                      ? "rounded-tr-sm bg-sidebar-primary text-sidebar-primary-foreground"
-                      : "rounded-tl-sm border-l-2 border-blue-100 border-l-blue-600/60 bg-muted/30 text-foreground dark:border-border dark:bg-card/70"
+                      ? "rounded-2xl rounded-tr-sm bg-sidebar-primary px-4 py-3 text-sidebar-primary-foreground"
+                      : "px-1 py-0.5 text-foreground"
                   }`}
                 >
                   {isUser ? (
                     <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                   ) : (
-                    <div className="prose prose-sm min-w-0 max-w-full break-words leading-7 dark:prose-invert">
+                    <div className="prose prose-sm min-w-0 max-w-full break-words leading-7 prose-headings:font-medium prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-a:text-sidebar-primary prose-li:text-foreground">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeSanitize]}
@@ -286,20 +306,32 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
                 {/* Acciones del mensaje del asistente (Feedback y métricas) */}
                 {!isUser && (
-                  <div className="mt-1.5 flex items-center gap-2 px-1 text-xs text-muted-foreground">
-                    {msg.executionTimeMs && (
-                      <span className="text-[10px]">{msg.executionTimeMs}ms</span>
+                  <div className="mt-2 flex items-center gap-2 px-1 text-[10px] text-muted-foreground">
+                    {msg.executionTimeMs != null && (
+                      <span className="text-[10px]" title={`${msg.executionTimeMs.toLocaleString()} ms de tiempo de generación`}>
+                        {formatExecutionTime(msg.executionTimeMs)}
+                      </span>
                     )}
                     {msg.tokensUsed && (
                       <span className="text-[10px]">• {msg.tokensUsed} tokens</span>
                     )}
 
-                    <div className="flex items-center gap-1 ml-auto">
+                    <div className="ml-auto flex items-center gap-1 opacity-75 transition-opacity group-hover:opacity-100">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => void handleCopyMessage(msg)}
+                        className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        title={copiedMessageId === msg.id ? "Copiado" : "Copiar al portapapeles"}
+                        aria-label={copiedMessageId === msg.id ? "Respuesta copiada" : "Copiar respuesta"}
+                      >
+                        {copiedMessageId === msg.id ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenFeedback(msg.id, true)}
-                        className="h-8 w-8 hover:text-green-700"
+                        className="h-7 w-7 text-muted-foreground hover:bg-muted hover:text-sidebar-primary"
                         title="Respuesta útil"
                       >
                         <ThumbsUp className="h-3.5 w-3.5" />
@@ -308,7 +340,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleOpenFeedback(msg.id, false)}
-                        className="h-8 w-8 hover:text-destructive"
+                        className="h-7 w-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                         title="Respuesta no útil"
                       >
                         <ThumbsDown className="h-3.5 w-3.5" />
@@ -324,29 +356,21 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
       {/* Streaming Activo y Herramientas */}
       {isStreaming && (
-        <div className="flex w-full min-w-0 items-start gap-3 flex-row">
-          <Avatar className="h-9 w-9 shrink-0 border border-blue-200/70 shadow-sm dark:border-blue-900">
-            <AvatarFallback className="bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-              <Stethoscope className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="flex w-full min-w-0 max-w-[88%] flex-col space-y-2 md:max-w-[78%]">
-            {/* Indicador de Ejecución de Herramienta en lenguaje natural */}
-            {activeToolName && (
-              <Badge
-                variant="secondary"
-                className="w-fit gap-1.5 py-1 px-2.5 text-[11px] font-normal animate-pulse"
-              >
-                <Loader2 className="w-3 h-3 animate-spin text-primary" />
-                {getToolDisplayName(activeToolName)}
-              </Badge>
-            )}
+        <div className="flex w-full min-w-0 justify-start">
+          <div className="flex w-full min-w-0 max-w-full flex-col space-y-2 md:max-w-[90%]">
+            <details className="group/status w-fit max-w-full rounded-full border border-border bg-card text-xs text-muted-foreground">
+              <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-1.5 [&::-webkit-details-marker]:hidden">
+                <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-sidebar-primary" />
+                <span>{getToolDisplayName(activeToolName)}</span>
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform group-open/status:rotate-180" />
+              </summary>
+              <p className="px-3 pb-2 pl-8 text-xs leading-5">Estoy revisando la información necesaria para responder.</p>
+            </details>
 
             {/* Contenido progresivo en streaming */}
-            <div className="w-full min-w-0 max-w-full rounded-2xl rounded-tl-sm border-l-2 border-blue-100 border-l-blue-600/60 bg-muted/30 px-4 py-3.5 text-sm leading-6 text-foreground dark:border-border dark:bg-card/70">
+            <div className="w-full min-w-0 max-w-full px-1 py-0.5 text-[14px] leading-7 text-foreground">
               {streamingText ? (
-                <div className="prose prose-sm min-w-0 max-w-full break-words leading-7 dark:prose-invert">
+                <div className="prose prose-sm min-w-0 max-w-full break-words leading-7 prose-headings:font-medium prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-a:text-sidebar-primary prose-li:text-foreground">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeSanitize]}
@@ -356,8 +380,8 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
                   </ReactMarkdown>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-sidebar-primary" />
                   Escribiendo respuesta...
                 </div>
               )}
@@ -368,7 +392,7 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
 
       {/* Diálogo para Comentario de Feedback */}
       <Dialog open={!!feedbackMsgId} onOpenChange={(open) => !open && setFeedbackMsgId(null)}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="border-border bg-popover text-popover-foreground sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle className="text-base">
               {isPositiveFeedback ? "Calificar respuesta positiva" : "Reportar problema en respuesta"}
@@ -384,14 +408,14 @@ export const ChatMessageList: React.FC<ChatMessageListProps> = ({
               value={feedbackComment}
               onChange={(e) => setFeedbackComment(e.target.value)}
               placeholder="Escribe tu comentario..."
-              className="min-h-[96px] text-sm"
+              className="min-h-[96px] border-input bg-background text-sm text-foreground placeholder:text-muted-foreground"
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-              <Button variant="outline" size="sm" onClick={() => setFeedbackMsgId(null)}>
+              <Button variant="outline" size="sm" onClick={() => setFeedbackMsgId(null)} className="border-border bg-transparent text-foreground hover:bg-muted">
               Cancelar
             </Button>
-            <Button size="sm" onClick={handleSaveFeedback} disabled={sendFeedbackMutation.isPending}>
+            <Button size="sm" onClick={handleSaveFeedback} disabled={sendFeedbackMutation.isPending} className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
               {sendFeedbackMutation.isPending ? "Enviando…" : "Enviar comentario"}
             </Button>
           </DialogFooter>

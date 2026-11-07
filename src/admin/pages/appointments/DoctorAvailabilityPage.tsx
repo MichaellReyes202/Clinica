@@ -117,7 +117,7 @@ export const DoctorAvailabilityPage = () => {
                      <CardContent className="space-y-4">
                         <div className="grid grid-cols-3 gap-4">
                            <div className="p-3 rounded-lg bg-secondary/30">
-                              <p className="text-xs text-muted-foreground mb-1">Próxima Consulta</p>
+                              <p className="text-xs text-muted-foreground mb-1">Próxima disponibilidad</p>
                               <span className="text-lg font-bold text-card-foreground">
                                  {/* dar formato a la fecha */}
                                  {doctor.nextAppointmentTime ? formatDate(doctor.nextAppointmentTime, "dd/MM/yyyy") : "Sin citas"}

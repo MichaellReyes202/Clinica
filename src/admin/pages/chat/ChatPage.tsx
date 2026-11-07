@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, Stethoscope } from "lucide-react";
+import { ArrowLeft, PanelLeftClose, PanelLeftOpen, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatSidebar } from "@/clinica/components/chat/ChatSidebar";
 import { ChatMessageList } from "@/clinica/components/chat/ChatMessageList";
@@ -11,6 +11,7 @@ export const ChatPage: React.FC = () => {
   const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
   const [localMessages, setLocalMessages] = useState<ChatMessageDto[]>([]);
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(true);
 
   // Cargar detalle de la conversación activa desde TanStack Query
   const { data: conversationDetail, isLoading: isLoadingDetail } = useChatConversationDetail(activeConversationId);
@@ -65,40 +66,53 @@ export const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-1 h-full w-full bg-background overflow-hidden min-h-0">
+    <div className="flex min-h-0 h-full w-full flex-1 overflow-hidden bg-background text-foreground">
       {/* Columna 1: Barra Lateral */}
       <ChatSidebar
-        className={isMobileChatOpen ? "hidden xl:flex" : "flex"}
+        className={isHistoryVisible ? (isMobileChatOpen ? "hidden xl:flex" : "flex") : "hidden"}
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
       />
 
       {/* Columna 2: Área Principal de Chat */}
-      <main className={`${isMobileChatOpen ? "flex" : "hidden xl:flex"} flex-1 flex-col h-full min-w-0 min-h-0 overflow-hidden bg-background`}>
+      <main className={`${isMobileChatOpen ? "flex" : "hidden xl:flex"} min-h-0 h-full min-w-0 flex-1 flex-col overflow-hidden bg-background text-foreground`}>
         {/* Cabecera del Chat */}
-        <header className="shrink-0 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur md:px-7 md:py-4">
-          <div className="mx-auto flex w-full max-w-5xl items-center gap-3">
+        <header className="relative shrink-0 border-b border-border bg-card px-4 py-3 md:px-8 md:py-3.5">
+          <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => {
                 if (isStreaming) cancelStream();
                 setIsMobileChatOpen(false);
+                setIsHistoryVisible(true);
               }}
-              className="-ml-2 h-9 w-9 shrink-0 xl:hidden"
+              className="h-9 w-9 text-muted-foreground hover:bg-muted hover:text-foreground xl:hidden"
               aria-label="Volver a conversaciones"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
-              <Stethoscope className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsHistoryVisible((visible) => !visible)}
+              className="hidden h-9 w-9 text-muted-foreground hover:bg-muted hover:text-foreground xl:inline-flex"
+              aria-label={isHistoryVisible ? "Ocultar historial" : "Mostrar historial"}
+              title={isHistoryVisible ? "Ocultar historial" : "Mostrar historial"}
+            >
+              {isHistoryVisible ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+            </Button>
+          </div>
+          <div className="mx-auto flex min-h-9 w-full max-w-3xl items-center justify-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sidebar-primary/10 text-sidebar-primary">
+              <Stethoscope className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-700 dark:text-blue-300">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-sidebar-primary">
                 Asistente clínico
               </p>
-              <h2 className="truncate text-sm font-semibold text-foreground md:text-base">
+              <h2 className="truncate text-sm font-medium text-card-foreground md:text-[15px]">
                 {conversationDetail?.title || (localMessages.length ? "Nueva consulta" : "Nueva conversación")}
               </h2>
             </div>

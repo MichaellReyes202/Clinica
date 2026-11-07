@@ -4,6 +4,7 @@ export interface ChatMessageDto {
   content: string;
   tokensUsed?: number | null;
   executionTimeMs?: number | null;
+  toolNames?: string[] | null;
   createdAt: string;
 }
 
@@ -42,6 +43,7 @@ export interface StreamChatOptions {
   message: string;
   onChunk: (chunk: string) => void;
   onDone?: () => void;
+  onDataChanged?: (resource: string) => void;
   onError?: (error: Error) => void;
   onAbort?: () => void;
   onConversationId?: (id: number) => void;
